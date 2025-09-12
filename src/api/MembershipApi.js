@@ -3,7 +3,7 @@ import { combineHeaders } from './config';
 import { Api } from './apiurl';
 
 // FIXED: Remove trailing slash to prevent double slashes
-const BASE_URL = process.env.REACT_APP_API_URL || 'https://web-production-c00c.up.railway.app';
+const BASE_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000';
 
 // Helper function to clean URLs and prevent double slashes
 const cleanUrl = (baseUrl, endpoint) => {

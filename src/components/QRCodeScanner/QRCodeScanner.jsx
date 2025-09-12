@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNotification } from "../../contexts/NotificationContext";
 
 function QRCodeScanner() {
   const [scanResult, setScanResult] = useState(null);
@@ -11,6 +12,7 @@ function QRCodeScanner() {
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
   const scanIntervalRef = useRef(null);
+  const { success, error: showError, info } = useNotification();
 
   useEffect(() => {
     initializeCamera();
@@ -59,20 +61,25 @@ function QRCodeScanner() {
     if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
       setPermissionStatus("denied");
       setError("Camera permission denied. Please allow camera access and refresh the page.");
+      showError("Camera permission denied. Please allow camera access and refresh the page.");
     } else if (err.name === "NotFoundError" || err.name === "DevicesNotFoundError") {
       setPermissionStatus("no_camera");
       setError("No camera found on this device.");
+      showError("No camera found on this device.");
     } else if (err.name === "NotReadableError" || err.name === "TrackStartError") {
       setPermissionStatus("camera_busy");
       setError("Camera is already in use by another application.");
+      showError("Camera is already in use by another application.");
     } else if (err.name === "OverconstrainedError" || err.name === "ConstraintNotSatisfiedError") {
       setPermissionStatus("constraint_error");
       setError("Camera doesn't support the required settings. Trying with basic settings...");
+      info("Camera doesn't support the required settings. Trying with basic settings...");
       // Try with more basic constraints
       setTimeout(() => startCameraWithBasicConstraints(), 1000);
     } else {
       setPermissionStatus("error");
       setError(`Camera error: ${err.message}`);
+      showError(`Camera error: ${err.message}`);
     }
   };
 
@@ -155,6 +162,7 @@ function QRCodeScanner() {
           setCameraReady(true);
           setPermissionStatus("granted");
           setScanning(true);
+          success("Camera ready! Position QR code within the frame.");
           startScanning();
         };
 
@@ -255,6 +263,7 @@ function QRCodeScanner() {
   const handleScan = (data) => {
     if (data && data.text) {
       console.log("QR Code detected:", data.text);
+      info("QR Code detected, processing...");
       
       // Extract user ID from QR code
       const matches = data.text.match(/UserID=([a-f0-9\-]+)/i);
@@ -264,6 +273,7 @@ function QRCodeScanner() {
         verifyUserRegistration(matches[1]);
       } else {
         setError("Invalid QR Code format. Expected format: UserID=...");
+        showError("Invalid QR Code format. Expected format: UserID=...");
         setTimeout(() => setError(null), 3000);
       }
     }
@@ -275,12 +285,15 @@ function QRCodeScanner() {
     try {
       const token = localStorage.getItem("accessToken");
       if (!token) {
+        showError("Authentication required. Please login first.");
         setScanResult({
           status: "error",
           message: "Authentication required. Please login first."
         });
         return;
       }
+
+      info("Verifying user registration...");
 
       const response = await fetch("http://127.0.0.1:8000/program/verify-user-event-registration/", {
         method: "POST",
@@ -293,6 +306,7 @@ function QRCodeScanner() {
 
       if (!response.ok) {
         if (response.status === 401) {
+          showError("Session expired. Please login again.");
           setScanResult({
             status: "error",
             message: "Session expired. Please login again."
@@ -301,6 +315,7 @@ function QRCodeScanner() {
         }
         
         if (response.status === 404) {
+          showError("User not found or not registered for any events.");
           setScanResult({
             status: "not_registered",
             message: "User not found or not registered for any events."
@@ -309,6 +324,7 @@ function QRCodeScanner() {
         }
 
         if (response.status === 403) {
+          showError("Access denied. You don't have permission to verify registrations.");
           setScanResult({
             status: "error",
             message: "Access denied. You don't have permission to verify registrations."
@@ -322,9 +338,16 @@ function QRCodeScanner() {
       const result = await response.json();
       setScanResult(result);
       
+      if (result.status === "registered") {
+        success(`Registration verified for ${result.user.username}`);
+      } else {
+        info("User registration status checked");
+      }
+      
     } catch (err) {
       console.error("Registration verification error:", err);
       setError("Failed to verify registration: " + err.message);
+      showError("Failed to verify registration: " + err.message);
       
       setTimeout(() => {
         setError(null);
@@ -338,17 +361,20 @@ function QRCodeScanner() {
   const resetToScanning = async () => {
     setScanResult(null);
     setError(null);
+    info("Resetting scanner...");
     await initializeCamera();
   };
 
   const resetScan = async () => {
     setScanResult(null);
     setError(null);
+    info("Ready to scan next QR code");
     await initializeCamera();
   };
 
   const requestCameraPermission = async () => {
     setError(null);
+    info("Requesting camera permission...");
     await initializeCamera();
   };
 

@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './PasswordReset.css';
 import { resetPassword, validateResetToken } from '../../api/AuthApi';
-
+import { useNotification } from '../../contexts/NotificationContext';
 
 const PasswordReset = () => {
- 
   const { token } = useParams();
   const navigate = useNavigate();
   
@@ -17,17 +16,19 @@ const PasswordReset = () => {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [tokenValid, setTokenValid] = useState(null);
+  const { success, error: showError, info } = useNotification();
 
- 
   useEffect(() => {
     const checkToken = async () => {
       if (!token) {
         setTokenValid(false);
         setError('No reset token provided in URL.');
+        showError('No reset token provided in URL.');
         return;
       }
       
       console.log('🔍 Starting token validation...');
+      info('Validating your reset link...');
       
       try {
         // Use the validateResetToken function from AuthApi
@@ -35,9 +36,11 @@ const PasswordReset = () => {
         
         if (result.valid) {
           setTokenValid(true);
+          success('Reset link is valid! You can now set your new password.');
         } else {
           setTokenValid(false);
           setError(result.message || 'This password reset link is invalid or has expired.');
+          showError(result.message || 'This password reset link is invalid or has expired.');
         }
       } catch (err) {
         console.error('❌ Token validation error:', err);
@@ -46,10 +49,13 @@ const PasswordReset = () => {
         // Handle error response
         if (err.token && Array.isArray(err.token)) {
           setError(err.token[0]);
+          showError(err.token[0]);
         } else if (err.message) {
           setError(err.message);
+          showError(err.message);
         } else {
           setError('Unable to validate reset link. Please try again.');
+          showError('Unable to validate reset link. Please try again.');
         }
       }
     };
@@ -72,22 +78,27 @@ const PasswordReset = () => {
     // Basic validation
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
+      showError('Passwords do not match');
       return;
     }
 
     if (formData.password.length < 8) {
       setError('Password must be at least 8 characters long');
+      showError('Password must be at least 8 characters long');
       return;
     }
 
     setLoading(true);
     setError('');
+    info('Resetting your password...');
 
     try {
       // Pass both password and confirmPassword to the API
       await resetPassword(token, formData.password, formData.confirmPassword);
       
       setMessage('Password reset successful! Redirecting to login...');
+      success('Password reset successful! Redirecting to login...');
+      info('You will be redirected to the login page in 3 seconds');
       setTimeout(() => {
         navigate('/login');
       }, 3000);
@@ -95,16 +106,22 @@ const PasswordReset = () => {
       // Handle various error formats from backend
       if (err.error) {
         setError(err.error);
+        showError(err.error);
       } else if (err.token && Array.isArray(err.token)) {
         setError(err.token[0]);
+        showError(err.token[0]);
       } else if (err.password && Array.isArray(err.password)) {
         setError(err.password[0]);
+        showError(err.password[0]);
       } else if (err.confirm_password && Array.isArray(err.confirm_password)) {
         setError(err.confirm_password[0]);
+        showError(err.confirm_password[0]);
       } else if (err.message) {
         setError(err.message);
+        showError(err.message);
       } else if (typeof err === 'string') {
         setError(err);
+        showError(err);
       } else {
         // If error is an object with field errors
         const errorMessages = Object.entries(err)
@@ -118,6 +135,7 @@ const PasswordReset = () => {
           .join(' ');
         
         setError(errorMessages || 'Password reset failed');
+        showError(errorMessages || 'Password reset failed');
       }
     } finally {
       setLoading(false);
@@ -125,10 +143,12 @@ const PasswordReset = () => {
   };
 
   const handleNavigateToLogin = () => {
+    info('Redirecting to login page...');
     navigate('/login');
   };
 
   const handleNavigateToForgotPassword = () => {
+    info('Redirecting to request new reset link...');
     navigate('/forgot-password');
   };
 

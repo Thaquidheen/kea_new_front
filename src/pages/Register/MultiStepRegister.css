@@ -270,14 +270,15 @@ body {
   background-color: #444;
 }
 
-/* Enhanced notification styles for mobile visibility */
 .notification-container {
   position: fixed;
   top: 20px;
-  right: 20px;
-  left: 20px;
+  right: 20px; /* Only right positioning */
+  /* Remove: left: 20px; */
   z-index: 9999;
   pointer-events: none;
+  max-width: 400px;
+  min-width: 300px;
 }
 
 .notification {
@@ -287,14 +288,13 @@ body {
   margin-bottom: 12px;
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  animation: slideInFromTop 0.4s ease;
+  animation: slideInFromRight 0.4s ease;
   position: relative;
   pointer-events: auto;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  max-width: 500px;
-  margin-left: auto;
-  margin-right: auto;
+  opacity: 1;
+  transform: translateX(0);
 }
 
 .notification-success {
@@ -347,7 +347,7 @@ body {
   padding: 4px;
   margin-left: 12px;
   border-radius: 4px;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
 }
 
 .notification-close:hover {
@@ -355,12 +355,14 @@ body {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Enhanced mobile-specific notification styles */
+/* Mobile responsive for MultiStepRegister */
 @media (max-width: 768px) {
   .notification-container {
     top: 10px;
     right: 10px;
-    left: 10px;
+    left: auto; /* Explicitly remove left */
+    max-width: calc(100vw - 20px);
+    min-width: unset;
   }
   
   .notification {
@@ -368,6 +370,7 @@ body {
     font-size: 14px;
     border-radius: 6px;
     box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+    margin-bottom: 8px;
   }
   
   .notification-message {
@@ -379,38 +382,33 @@ body {
     font-size: 18px;
     margin-right: 10px;
   }
-  
-  /* Ensure notifications appear above mobile keyboards */
-  .notification {
-    margin-bottom: 8px;
-  }
 }
 
-/* Animation for notifications */
-@keyframes slideInFromTop {
+/* Fixed animations - slide from right */
+@keyframes slideInFromRight {
   from {
-    transform: translateY(-100px);
+    transform: translateX(100px);
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    transform: translateX(0);
     opacity: 1;
   }
 }
 
-@keyframes slideOutToTop {
+@keyframes slideOutToRight {
   from {
-    transform: translateY(0);
+    transform: translateX(0);
     opacity: 1;
   }
   to {
-    transform: translateY(-100px);
+    transform: translateX(100px);
     opacity: 0;
   }
 }
 
 .notification.notification-exit {
-  animation: slideOutToTop 0.3s ease forwards;
+  animation: slideOutToRight 0.3s ease forwards;
 }
 
 /* Academic Information Section */

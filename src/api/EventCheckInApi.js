@@ -1,8 +1,7 @@
 // src/api/EventCheckInApi.js
 import axios from 'axios';
 
-// Get base URL from environment variable with fallback
-const BASE_URL = 'https://web-production-c00c.up.railway.app';
+const BASE_URL = 'http://127.0.0.1:8000';
 
 // Helper function to get auth headers
 const getAuthHeaders = () => {

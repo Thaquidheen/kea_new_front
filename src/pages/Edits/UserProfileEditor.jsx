@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { getUserProfile, updateUserProfile, deleteProfilePicture } from '../../api/AuthApi';
 import './UserProfileEditor.css';
-import { Api } from '../../api/apiurl'; // <-- add
+import { Api } from '../../api/apiurl';
+import { useNotification } from '../../contexts/NotificationContext';
 
 const UserProfileEditor = () => {
   const [profile, setProfile] = useState({
@@ -25,6 +26,7 @@ const UserProfileEditor = () => {
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
   const fileInputRef = useRef(null);
+  const { success, error: showError, info } = useNotification();
 
   const bloodGroupChoices = [
     ['A+', 'A Positive'],
@@ -45,6 +47,7 @@ const UserProfileEditor = () => {
   const fetchUserProfile = async () => {
     try {
       setFetchingProfile(true);
+      info('Loading your profile information...');
       const response = await getUserProfile();
       
       if (response) {
@@ -66,21 +69,24 @@ const UserProfileEditor = () => {
         setOriginalProfile(profileData);
 
         if (response.profile_picture_url) {
-        setPreviewImage(response.profile_picture_url);
-        console.log('Profile picture URL:', response.profile_picture_url);
-      } else {
-        setPreviewImage(null);
+          setPreviewImage(response.profile_picture_url);
+          info('Profile picture loaded successfully');
+        } else {
+          setPreviewImage(null);
+        }
+        success('Profile information loaded successfully');
       }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      setErrors({ 
+        general: error.message || 'Failed to load profile data' 
+      });
+      showError(error.message || 'Failed to load profile data');
+    } finally {
+      setFetchingProfile(false);
     }
-  } catch (error) {
-    console.error('Error fetching profile:', error);
-    setErrors({ 
-      general: error.message || 'Failed to load profile data' 
-    });
-  } finally {
-    setFetchingProfile(false);
-  }
-};
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setProfile(prev => ({
@@ -108,6 +114,7 @@ const UserProfileEditor = () => {
           ...prev,
           profile_picture: 'Please select a valid image file'
         }));
+        showError('Please select a valid image file');
         return;
       }
 
@@ -116,6 +123,7 @@ const UserProfileEditor = () => {
           ...prev,
           profile_picture: 'Image size should be less than 5MB'
         }));
+        showError('Image size should be less than 5MB');
         return;
       }
 
@@ -127,6 +135,7 @@ const UserProfileEditor = () => {
       const reader = new FileReader();
       reader.onload = (e) => {
         setPreviewImage(e.target.result);
+        info('Image preview updated');
       };
       reader.readAsDataURL(file);
 
@@ -155,6 +164,9 @@ const UserProfileEditor = () => {
     }
 
     setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      showError('Please fix the validation errors before submitting');
+    }
     return Object.keys(newErrors).length === 0;
   };
 
@@ -170,6 +182,7 @@ const UserProfileEditor = () => {
     setSuccessMessage('');
 
     try {
+      info('Preparing to update your profile...');
       const formData = new FormData();
       
       Object.keys(profile).forEach(key => {
@@ -186,24 +199,33 @@ const UserProfileEditor = () => {
       
       if (!hasChanges) {
         setSuccessMessage('No changes detected to update.');
+        info('No changes detected to update');
         return;
       }
 
+      info('Updating your profile...');
       const response = await updateUserProfile(formData);
       
       if (response) {
         setSuccessMessage(response.message || 'Profile updated successfully!');
+        success(response.message || 'Profile updated successfully!');
+        info('Refreshing profile data...');
         await fetchUserProfile();
+        
+        // Dispatch event to update navbar
+        window.dispatchEvent(new Event('userUpdated'));
       }
     } catch (error) {
       console.error('Error updating profile:', error);
       
       if (error.fields) {
         setErrors(error.fields);
+        showError('Please check the highlighted fields and try again');
       } else {
         setErrors({ 
           general: error.message || 'Failed to update profile. Please try again.' 
         });
+        showError(error.message || 'Failed to update profile. Please try again.');
       }
     } finally {
       setLoading(false);
@@ -214,22 +236,31 @@ const UserProfileEditor = () => {
     if (window.confirm('Are you sure you want to delete your profile picture?')) {
       try {
         setLoading(true);
+        info('Deleting your profile picture...');
         const response = await deleteProfilePicture();
         
         if (response) {
           setPreviewImage(null);
           setProfile(prev => ({ ...prev, profile_picture: null }));
           setSuccessMessage(response.message || 'Profile picture deleted successfully!');
+          success(response.message || 'Profile picture deleted successfully!');
+          info('Refreshing profile data...');
           await fetchUserProfile();
+          
+          // Dispatch event to update navbar
+          window.dispatchEvent(new Event('userUpdated'));
         }
       } catch (error) {
         console.error('Error deleting profile picture:', error);
         setErrors({ 
           profile_picture: error.message || 'Failed to delete profile picture' 
         });
+        showError(error.message || 'Failed to delete profile picture');
       } finally {
         setLoading(false);
       }
+    } else {
+      info('Profile picture deletion cancelled');
     }
   };
 

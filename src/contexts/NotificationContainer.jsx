@@ -1,78 +1,81 @@
-import React, { useEffect } from 'react';
-import { BiCheckCircle, BiErrorCircle, BiInfoCircle, BiX } from 'react-icons/bi';
-import { createPortal } from 'react-dom';
-import { NOTIFICATION_TYPES, useNotification } from './NotificationReducer';
+// src/components/Notification/Notification.jsx
+import React, { useEffect, useState } from 'react';
+import './notifications.css'; // Import the fixed CSS
 
-// Notification Component
-const Notification = ({ notification, onClose }) => {
-  const { id, message, type } = notification;
+const NotificationContainer = ({ notifications, removeNotification }) => {
+  if (!notifications || notifications.length === 0) {
+    return null;
+  }
 
-  // Auto-close with animation when duration is reached
+  return (
+    <div className="notification-container">
+      {notifications.map((notification) => (
+        <NotificationItem
+          key={notification.id}
+          notification={notification}
+          onClose={() => removeNotification(notification.id)}
+        />
+      ))}
+    </div>
+  );
+};
+
+const NotificationItem = ({ notification, onClose }) => {
+  const [isRemoving, setIsRemoving] = useState(false);
+
+  const handleClose = () => {
+    setIsRemoving(true);
+    // Wait for animation to complete before actually removing
+    setTimeout(() => {
+      onClose();
+    }, 500);
+  };
+
+  // Auto-remove after specified duration
   useEffect(() => {
-    const notificationElement = document.querySelector(`[data-notification-id="${id}"]`);
-    if (notificationElement) {
-      notificationElement.style.setProperty('--duration', notification.duration);
+    if (notification.duration && notification.duration > 0) {
+      const timer = setTimeout(() => {
+        handleClose();
+      }, notification.duration);
+
+      return () => clearTimeout(timer);
     }
-  }, [id, notification.duration]);
+  }, [notification.duration]);
 
   const getIcon = () => {
-    switch (type) {
-      case NOTIFICATION_TYPES.SUCCESS:
-        return <BiCheckCircle size={20} />;
-      case NOTIFICATION_TYPES.ERROR:
-        return <BiErrorCircle size={20} />;
-      case NOTIFICATION_TYPES.WARNING:
-        return <BiInfoCircle size={20} />;
-      case NOTIFICATION_TYPES.INFO:
+    switch (notification.type) {
+      case 'success':
+        return '✓';
+      case 'error':
+        return '✕';
+      case 'warning':
+        return '⚠';
+      case 'info':
       default:
-        return <BiInfoCircle size={20} />;
+        return 'ℹ';
     }
   };
 
   return (
     <div 
-      className={`notification notification-${type}`} 
-      data-notification-id={id}
+      className={`notification notification-${notification.type} ${isRemoving ? 'removing' : ''}`}
     >
       <div className="notification-content">
         <div className="notification-icon">
           {getIcon()}
         </div>
-        <div className="notification-message">{message}</div>
+        <div className="notification-message">
+          {notification.message}
+        </div>
       </div>
       <button 
-        className="notification-close" 
-        onClick={() => onClose(id)} 
-        aria-label="Close"
+        className="notification-close"
+        onClick={handleClose}
+        aria-label="Close notification"
       >
-        <BiX size={20} />
+        ×
       </button>
     </div>
-  );
-};
-
-// Notification Container Component
-const NotificationContainer = () => {
-  const { state, dispatch } = useNotification();
-  
-  // Early return if no notifications
-  if (!state.notifications.length) return null;
-  
-  const handleClose = (id) => {
-    dispatch({ type: 'HIDE_NOTIFICATION', payload: id });
-  };
-  
-  return createPortal(
-    <div className="notification-container">
-      {state.notifications.map(notification => (
-        <Notification
-          key={notification.id}
-          notification={notification}
-          onClose={handleClose}
-        />
-      ))}
-    </div>,
-    document.body
   );
 };
 

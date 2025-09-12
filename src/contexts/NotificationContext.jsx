@@ -1,105 +1,9 @@
-import React, { createContext, useContext, useReducer, useCallback } from 'react';
-import { createPortal } from 'react-dom';
-import { BiCheckCircle, BiErrorCircle, BiInfoCircle, BiX } from 'react-icons/bi';
+// src/contexts/NotificationContext.js
+import React, { createContext, useContext, useState, useCallback } from 'react';
+import NotificationContainer from './NotificationContainer';
 
-// Notification Types
-export const NOTIFICATION_TYPES = {
-  SUCCESS: 'success',
-  ERROR: 'error',
-  INFO: 'info',
-  WARNING: 'warning'
-};
-
-// Initial state
-const initialState = [];
-
-// Context Setup
 const NotificationContext = createContext();
 
-// Reducer for managing notifications
-const notificationReducer = (state, action) => {
-  switch (action.type) {
-    case 'ADD_NOTIFICATION':
-      return [
-        ...state,
-        {
-          id: action.payload.id,
-          message: action.payload.message,
-          type: action.payload.type,
-          duration: action.payload.duration
-        }
-      ];
-    case 'REMOVE_NOTIFICATION':
-      return state.filter(notification => notification.id !== action.payload);
-    default:
-      return state;
-  }
-};
-
-// Notification Provider Component
-export const NotificationProvider = ({ children }) => {
-  const [notifications, dispatch] = useReducer(notificationReducer, initialState);
-
-  // Show a notification
-  const showNotification = useCallback((message, type = NOTIFICATION_TYPES.INFO, duration = 5000) => {
-    const id = Date.now();
-    
-    dispatch({
-      type: 'ADD_NOTIFICATION',
-      payload: { id, message, type, duration }
-    });
-
-    // Auto-remove notification after duration
-    if (duration !== 0) {
-      setTimeout(() => {
-        dispatch({ type: 'REMOVE_NOTIFICATION', payload: id });
-      }, duration);
-    }
-    
-    return id;
-  }, []);
-
-  // Helper methods for different notification types
-  const success = useCallback((message, duration = 5000) => 
-    showNotification(message, NOTIFICATION_TYPES.SUCCESS, duration), 
-  [showNotification]);
-  
-  const error = useCallback((message, duration = 5000) => 
-    showNotification(message, NOTIFICATION_TYPES.ERROR, duration), 
-  [showNotification]);
-  
-  const info = useCallback((message, duration = 5000) => 
-    showNotification(message, NOTIFICATION_TYPES.INFO, duration), 
-  [showNotification]);
-  
-  const warning = useCallback((message, duration = 5000) => 
-    showNotification(message, NOTIFICATION_TYPES.WARNING, duration), 
-  [showNotification]);
-
-  // Remove a notification
-  const removeNotification = useCallback((id) => {
-    dispatch({ type: 'REMOVE_NOTIFICATION', payload: id });
-  }, []);
-
-  const value = {
-    notifications,
-    showNotification,
-    removeNotification,
-    success,
-    error,
-    info,
-    warning
-  };
-
-  return (
-    <NotificationContext.Provider value={value}>
-      {children}
-      <NotificationContainer notifications={notifications} removeNotification={removeNotification} />
-    </NotificationContext.Provider>
-  );
-};
-
-// Hook for using the notification system
 export const useNotification = () => {
   const context = useContext(NotificationContext);
   if (!context) {
@@ -108,59 +12,76 @@ export const useNotification = () => {
   return context;
 };
 
-// Individual Notification Component
-const Notification = ({ notification, onClose }) => {
-  const { id, message, type } = notification;
+export const NotificationProvider = ({ children }) => {
+  const [notifications, setNotifications] = useState([]);
 
-  const getIcon = () => {
-    switch (type) {
-      case NOTIFICATION_TYPES.SUCCESS:
-        return <BiCheckCircle size={20} />;
-      case NOTIFICATION_TYPES.ERROR:
-        return <BiErrorCircle size={20} />;
-      case NOTIFICATION_TYPES.WARNING:
-        return <BiInfoCircle size={20} />;
-      case NOTIFICATION_TYPES.INFO:
-      default:
-        return <BiInfoCircle size={20} />;
+  const addNotification = useCallback((message, type = 'info', duration = 5000) => {
+    const id = Date.now() + Math.random();
+    const notification = {
+      id,
+      message,
+      type,
+      duration,
+      timestamp: new Date()
+    };
+
+    setNotifications(prev => [...prev, notification]);
+
+    // Auto-remove if duration is specified
+    if (duration > 0) {
+      setTimeout(() => {
+        removeNotification(id);
+      }, duration);
     }
+
+    return id;
+  }, []);
+
+  const removeNotification = useCallback((id) => {
+    setNotifications(prev => prev.filter(notification => notification.id !== id));
+  }, []);
+
+  const clearAllNotifications = useCallback(() => {
+    setNotifications([]);
+  }, []);
+
+  // Convenience methods for different notification types
+  const Success = useCallback((message, duration = 5000) => {
+    return addNotification(message, 'success', duration);
+  }, [addNotification]);
+
+  const error = useCallback((message, duration = 7000) => {
+    return addNotification(message, 'error', duration);
+  }, [addNotification]);
+
+  const showWarning = useCallback((message, duration = 6000) => {
+    return addNotification(message, 'warning', duration);
+  }, [addNotification]);
+
+  const showInfo = useCallback((message, duration = 5000) => {
+    return addNotification(message, 'info', duration);
+  }, [addNotification]);
+
+  const value = {
+    notifications,
+    addNotification,
+    removeNotification,
+    clearAllNotifications,
+    Success,
+    error,
+    showWarning,
+    showInfo
   };
 
   return (
-    <div className={`notification notification-${type}`} data-notification-id={id}>
-      <div className="notification-content">
-        <div className="notification-icon">
-          {getIcon()}
-        </div>
-        <div className="notification-message">{message}</div>
-      </div>
-      <button className="notification-close" onClick={() => onClose(id)} aria-label="Close">
-        <BiX size={20} />
-      </button>
-    </div>
+    <NotificationContext.Provider value={value}>
+      {children}
+      <NotificationContainer 
+        notifications={notifications}
+        removeNotification={removeNotification}
+      />
+    </NotificationContext.Provider>
   );
 };
 
-// Container for all Notifications
-const NotificationContainer = ({ notifications, removeNotification }) => {
-  if (!notifications.length) return null;
-
-  return createPortal(
-    <div className="notification-container">
-      {notifications.map(notification => (
-        <Notification
-          key={notification.id}
-          notification={notification}
-          onClose={removeNotification}
-        />
-      ))}
-    </div>,
-    document.body
-  );
-};
-
-export default {
-  NotificationProvider,
-  useNotification,
-  NOTIFICATION_TYPES
-};
+export default NotificationProvider;

@@ -2,10 +2,10 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 
-
 import "./EventRegistrationPage.css";
 import { getEventById, registerForEventSimple } from "../../../api/EventsApi";
 import { formatDate, formatTime } from "../../../utils/dateUtils";
+import { useNotification } from "../../../contexts/NotificationContext";
 
 function EventRegistrationPage() {
   const { eventId } = useParams();
@@ -14,17 +14,21 @@ function EventRegistrationPage() {
   const [error, setError] = useState(null);
   const [event, setEvent] = useState(null);
   const [eventLoading, setEventLoading] = useState(true);
+  const { success, error: showError, info } = useNotification();
 
   // Fetch event details when the component loads
   useEffect(() => {
     const fetchEventDetails = async () => {
       try {
         setEventLoading(true);
+        info('Loading event details...');
         const eventData = await getEventById(eventId);
         setEvent(eventData);
+        success('Event details loaded successfully');
       } catch (err) {
         console.error("Error fetching event:", err);
         setError("Could not load event details. Please try again.");
+        showError("Could not load event details. Please try again.");
       } finally {
         setEventLoading(false);
       }
@@ -39,15 +43,18 @@ function EventRegistrationPage() {
     setError(null);
 
     try {
+      info('Processing your registration...');
       // Use the API function instead of direct fetch
       await registerForEventSimple(eventId);
       
       // Show success message and navigate
-      alert("Successfully registered for the event!");
+      success("Successfully registered for the event!");
+      info('Redirecting to event details...');
       navigate(`/events/${eventId}`);
     } catch (err) {
       console.error("Registration error:", err);
       setError(err.message || "Failed to register for event. Please try again.");
+      showError(err.message || "Failed to register for event. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -65,6 +72,8 @@ function EventRegistrationPage() {
   }
 
   if (!event && !eventLoading) {
+    // Show error notification for event not found
+    showError("Event not found. Please check the event ID and try again.");
     return (
       <div className="event-registration-container">
         <div className="error-message">
@@ -100,7 +109,11 @@ function EventRegistrationPage() {
         <form onSubmit={handleSubmit} className="registration-form">
           {/* If you want to collect more info, add fields here */}
           <div className="form-actions">
-            <Link to={`/events/${eventId}`} className="cancel-button">
+            <Link 
+              to={`/events/${eventId}`} 
+              className="cancel-button"
+              onClick={() => info('Registration cancelled')}
+            >
               Cancel
             </Link>
             <button 

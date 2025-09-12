@@ -21,7 +21,7 @@ function MultiStepRegister() {
   const [testOtp, setTestOtp] = useState(''); 
   const { success, error: showError, info } = useNotification();
   const [userId, setUserId] = useState(null);
-  
+
   // Ref for scrolling to top
   const formTopRef = useRef(null);
   

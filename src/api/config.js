@@ -4,7 +4,7 @@
 let BASE_URL;
 
 if (process.env.NODE_ENV === 'production') {
-  BASE_URL = 'https://web-production-c00c.up.railway.app';
+  BASE_URL = 'http://127.0.0.1:8000';
 } else {
   BASE_URL = 'http://127.0.0.1:8000';
 }

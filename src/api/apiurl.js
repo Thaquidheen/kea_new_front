@@ -1,1 +1,1 @@
-export const Api = 'https://web-production-c00c.up.railway.app'
+export const Api = 'http://127.0.0.1:8000'

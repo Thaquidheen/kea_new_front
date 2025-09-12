@@ -10,6 +10,7 @@ import {
 import './MembershipCard.css';
 import PDFViewer from './PDFViewer';
 import { Api } from '../../api/apiurl';
+import { useNotification } from '../../contexts/NotificationContext';
 
 const MembershipCard = () => {
   const navigate = useNavigate();
@@ -30,9 +31,10 @@ const MembershipCard = () => {
   // Use refs to prevent multiple calls
   const isInitialized = useRef(false);
   const progressIntervalRef = useRef(null);
+  const { success, error: showError, info } = useNotification();
 
   // Backend base URL
-  const backendBaseUrl = Api || 'http://127.0.0.1:8000';
+ const backendBaseUrl = Api || 'http://127.0.0.1:8000';
 
   // Progress bar simulation for card generation
   const simulateProgress = () => {

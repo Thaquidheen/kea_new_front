@@ -32,6 +32,7 @@ import QRCheckInPage from './components/checkin/QRCheckInPage';
 import PasswordReset from './pages/forgotpassowrd/PasswordReset';
 import ForgotPassword from './pages/forgotpassowrd/ForgotPassword';
 import UserProfileEditor from './pages/Edits/UserProfileEditor';
+import NotificationProvider from './contexts/NotificationContext';
 
 
 
@@ -39,6 +40,7 @@ import UserProfileEditor from './pages/Edits/UserProfileEditor';
 function App() {
   return (
     <Router>
+         <NotificationProvider>
       {/* <TopBar/> */}
     <Navbar />
     <ModalProvider>
@@ -91,6 +93,7 @@ function App() {
     </Routes>
     </ModalProvider>
     <Footer/>
+    </NotificationProvider>
   </Router>
   );
 }

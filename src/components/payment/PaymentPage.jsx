@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { createMembershipOrder, verifyPayment, initializeRazorpay } from '../../api/PaymentApi';
 import './PaymentPage.css';
+import { useNotification } from '../../contexts/NotificationContext';
 
 const PaymentPage = () => {
   const location = useLocation();
@@ -13,12 +14,14 @@ const PaymentPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [userInfo, setUserInfo] = useState(null);
-  
+  const { success, error: showError, info } = useNotification();
+
   // Process location state for user info or get from localStorage
   useEffect(() => {
     const getUserInfo = () => {
       // First try to get from location state
       if (location.state?.userId && location.state?.userName) {
+        info('User information loaded from navigation');
         return {
           userId: location.state.userId,
           userName: location.state.userName
@@ -31,6 +34,7 @@ const PaymentPage = () => {
         if (userString) {
           const userObj = JSON.parse(userString);
           if (userObj.user_id) {
+            info('User information loaded from session');
             return {
               userId: userObj.user_id,
               userName: userObj.username || 'KEA Member'
@@ -39,9 +43,11 @@ const PaymentPage = () => {
         }
       } catch (err) {
         console.error('Error parsing user data:', err);
+        showError('Error loading user data from session');
       }
       
       // No user info found
+      showError('User information not found. Please log in to continue.');
       return null;
     };
     
@@ -65,29 +71,36 @@ const PaymentPage = () => {
   const handlePaymentStart = async () => {
     if (!userInfo?.userId) {
       setError('User information not available. Please log in again.');
+      showError('User information not available. Please log in again.');
       return;
     }
     
     setLoading(true);
     setError('');
+    info('Initiating payment process...');
     
     try {
       // Create Razorpay order
+      info('Creating payment order...');
       const orderData = await createMembershipOrder(userInfo.userId);
+      success('Payment order created successfully');
       
       // Initialize Razorpay with callbacks
       const rzp = initializeRazorpay(orderData, {
         handler: async function(response) {
           try {
             setLoading(true);
+            info('Verifying payment...');
             // Verify the payment
             const result = await verifyPayment(response);
             
             // Show success message and redirect
-            alert('Payment successful! Your membership is now active.');
+            success('Payment successful! Your membership is now active.');
+            info('Redirecting to dashboard...');
             navigate('/dashboard');
           } catch (err) {
             setError(err.message || 'Payment verification failed. Please contact support.');
+            showError(err.message || 'Payment verification failed. Please contact support.');
           } finally {
             setLoading(false);
           }
@@ -98,22 +111,26 @@ const PaymentPage = () => {
         },
         modal: {
           ondismiss: function() {
+            info('Payment cancelled by user');
             setLoading(false);
           }
         }
       });
       
       // Open Razorpay payment window
+      info('Opening payment gateway...');
       rzp.open();
       
       // Handle payment failures
       rzp.on('payment.failed', function(response) {
         setError(`Payment failed: ${response.error.description || 'Unknown error'}`);
+        showError(`Payment failed: ${response.error.description || 'Unknown error'}`);
         setLoading(false);
       });
       
     } catch (err) {
       setError(err.message || 'Failed to initiate payment. Please try again.');
+      showError(err.message || 'Failed to initiate payment. Please try again.');
       setLoading(false);
     }
   };

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './ForgotPassword.css';
 import { forgotPassword } from '../../api/AuthApi';
-// import { forgotPassword } from '../api/AuthApi';
+import { useNotification } from '../../contexts/NotificationContext';
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -12,6 +12,7 @@ const ForgotPassword = () => {
   const [error, setError] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
+  const { success, error: showError, info } = useNotification();
 
   // Email validation regex
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -32,33 +33,41 @@ const ForgotPassword = () => {
     // Client-side validation
     if (!email.trim()) {
       setError('Email address is required');
+      showError('Email address is required');
       return;
     }
 
     if (!validateEmail(email)) {
       setError('Please enter a valid email address');
+      showError('Please enter a valid email address');
       return;
     }
 
     setLoading(true);
     setError('');
+    info('Sending password reset email...');
 
     try {
       // Use the AuthApi forgotPassword function
       const data = await forgotPassword(email.trim().toLowerCase());
       setIsSubmitted(true);
+      success('Password reset email sent successfully! Check your inbox.');
       console.log('✅ Password reset email sent successfully');
     } catch (err) {
       console.error('❌ Request error:', err);
       // Handle specific error messages from backend
       if (err.email && Array.isArray(err.email)) {
         setError(err.email[0]);
+        showError(err.email[0]);
       } else if (err.error) {
         setError(err.error);
+        showError(err.error);
       } else if (err.message) {
         setError(err.message);
+        showError(err.message);
       } else {
         setError('Failed to send reset email. Please try again.');
+        showError('Failed to send reset email. Please try again.');
       }
     } finally {
       setLoading(false);
@@ -68,18 +77,21 @@ const ForgotPassword = () => {
   const handleResendEmail = async () => {
     setResendLoading(true);
     setError('');
+    info('Resending password reset email...');
 
     try {
       // Use the AuthApi forgotPassword function
       await forgotPassword(email.trim().toLowerCase());
+      success('Password reset email resent successfully!');
       console.log('✅ Password reset email resent successfully');
-      // You could show a temporary success message here
     } catch (err) {
       console.error('❌ Request error:', err);
       if (err.message) {
         setError(err.message);
+        showError(err.message);
       } else {
         setError('Failed to resend email. Please try again.');
+        showError('Failed to resend email. Please try again.');
       }
     } finally {
       setResendLoading(false);
@@ -87,6 +99,7 @@ const ForgotPassword = () => {
   };
 
   const handleBackToLogin = () => {
+    info('Redirecting to login page...');
     navigate('/login');
   };
 
@@ -94,6 +107,7 @@ const ForgotPassword = () => {
     setIsSubmitted(false);
     setEmail('');
     setError('');
+    info('Ready to try with a different email address');
   };
 
   // Success state - show after email is submitted
