@@ -1,0 +1,98 @@
+/* Global Theme (Adjust Colors As Needed) */
+:root {
+    --primary-color: #267540;
+    --dark-color: #0A0909;
+    --white: #ffffff;
+    --gray-bg: #f5f5f5;
+    --overlay-bg: rgba(0, 0, 0, 0.5);
+  }
+  
+  /* Masonry Section */
+  .masonry-section {
+    max-width: 1200px;
+    margin: auto;
+    padding: 40px 20px;
+    background: var(--white);
+  }
+  
+  .masonry-section h2 {
+    font-size: 2rem;
+    color: var(--dark-color);
+    margin-bottom: 20px;
+    text-align: left; /* or center, as you prefer */
+  }
+  
+  /* Masonry Layout */
+  .masonry {
+    column-count: 3;  /* Number of columns on desktop */
+    column-gap: 15px;
+  }
+  
+  .masonry-item {
+    position: relative;
+    margin-bottom: 15px;
+    break-inside: avoid; /* Prevent images from splitting */
+    border-radius: 5px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.3s;
+  }
+  
+  .masonry-item:hover {
+    transform: scale(1.02);
+  }
+  
+  .masonry-item img {
+    width: 100%;
+    display: block;
+    border-radius: 5px;
+  }
+  
+  /* Overlay with text */
+  .masonry-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--overlay-bg);
+    color: var(--white);
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    font-size: 1rem;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  
+  .masonry-item:hover .masonry-overlay {
+    opacity: 1;
+  }
+  
+  .masonry-title {
+    margin-right: 10px;
+    font-size: 1.1rem;
+  }
+  
+  .masonry-subtitle {
+    font-size: 0.9rem;
+    opacity: 0.9;
+  }
+  
+  /* Responsive Breakpoints */
+  @media (max-width: 1024px) {
+    .masonry {
+      column-count: 2;
+    }
+  }
+  
+  @media (max-width: 600px) {
+    .masonry {
+      column-count: 1;
+    }
+  
+    .masonry-section h2 {
+      font-size: 1.5rem;
+    }
+  }
+  

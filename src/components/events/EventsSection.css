@@ -1,0 +1,292 @@
+/* ======================================================
+   Events Section - Modern Aesthetic Design
+   ====================================================== */
+
+:root {
+  --kea-primary: #2e7d32;       /* Main green */
+  --kea-primary-dark: #1b5e20;  /* Darker green for hover */
+  --kea-primary-light: #4caf50; /* Lighter green */
+  --kea-primary-ultra-light: #e8f5e9; /* Very light green background */
+  --kea-text-dark: #212121;     /* Almost black text */
+  --kea-text-secondary: #424242; /* Dark gray text */
+  --kea-text-paragraph: #616161; /* Medium gray for paragraphs */
+  --kea-text-light: #757575;    /* Light gray text */
+  --kea-bg-white: #ffffff;      /* Pure white */
+  --kea-bg-light: #f8f9fa;      /* Off-white background */
+  --kea-bg-light-alt: #f0f2f5;  /* Alternative light background */
+  
+  --kea-radius-sm: 8px;
+  --kea-radius-md: 12px;
+  --kea-radius-lg: 20px;
+  --kea-radius-xl: 30px;
+  
+  --kea-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --kea-shadow-md: 0 6px 18px rgba(0, 0, 0, 0.1);
+  --kea-shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.12);
+  
+  --kea-transition-fast: 0.2s;
+  --kea-transition-medium: 0.3s;
+  --kea-transition-slow: 0.5s;
+}
+
+/* ----------------------
+   Main Section Structure
+---------------------- */
+.kea-events {
+  padding: 100px 20px;
+  background-color: var(--kea-bg-light);
+  position: relative;
+  overflow: hidden;
+}
+
+.kea-events__bg-shape {
+  position: absolute;
+  bottom: -150px;
+  left: -100px;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--kea-primary-ultra-light) 0%, var(--kea-primary-light) 100%);
+  opacity: 0.1;
+  z-index: 0;
+  filter: blur(70px);
+}
+
+.kea-events__container {
+  max-width: 1280px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.kea-events__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 60px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.kea-events__header-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.kea-events__header-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.kea-events__badge {
+  background-color: var(--kea-primary-ultra-light);
+  color: var(--kea-primary);
+  padding: 8px 16px;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: var(--kea-shadow-sm);
+}
+
+.kea-events__icon {
+  width: 18px;
+  height: 18px;
+}
+
+.kea-events__heading {
+  color: var(--kea-text-dark);
+  font-size: 2.8rem;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.kea-events__explore-btn {
+  background-color: transparent;
+  color: var(--kea-primary);
+  border: 2px solid var(--kea-primary);
+  padding: 12px 24px;
+  border-radius: var(--kea-radius-md);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--kea-transition-medium) ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.kea-events__explore-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--kea-primary);
+  z-index: -1;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform var(--kea-transition-medium) ease;
+}
+
+.kea-events__explore-btn:hover {
+  color: white;
+  transform: translateY(-3px);
+  box-shadow: var(--kea-shadow-md);
+}
+
+.kea-events__explore-btn:hover::before {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+.kea-events__arrow-icon {
+  width: 18px;
+  height: 18px;
+  transition: transform var(--kea-transition-fast) ease;
+}
+
+.kea-events__explore-btn:hover .kea-events__arrow-icon {
+  transform: translateX(4px);
+}
+
+.kea-events__btn-icon {
+  transition: transform var(--kea-transition-fast) ease;
+  display: inline-flex;
+}
+
+.kea-events__explore-btn:hover .kea-events__btn-icon {
+  transform: translateX(4px);
+}
+
+/* ----------------------
+   Events Grid
+---------------------- */
+.kea-events__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 30px;
+  margin-bottom: 60px;
+}
+
+/* ----------------------
+   Loading & Error States
+---------------------- */
+.kea-events__loading,
+.kea-events__error,
+.kea-events__no-events {
+  text-align: center;
+  padding: 50px 20px;
+  margin: 20px 0;
+  background: var(--kea-bg-white);
+  border-radius: var(--kea-radius-lg);
+  box-shadow: var(--kea-shadow-md);
+}
+
+.kea-events__spinner {
+  width: 50px;
+  height: 50px;
+  border: 3px solid var(--kea-primary-ultra-light);
+  border-top: 3px solid var(--kea-primary);
+  border-radius: 50%;
+  margin: 0 auto 20px;
+  animation: kea-spin 1s linear infinite;
+}
+
+@keyframes kea-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.kea-events__error p {
+  color: #e74c3c;
+  font-size: 1.1rem;
+}
+
+.kea-events__no-events p {
+  color: var(--kea-text-paragraph);
+  font-size: 1.1rem;
+}
+
+/* ----------------------
+   Responsive Adjustments
+---------------------- */
+@media (max-width: 1200px) {
+  .kea-events {
+    padding: 80px 20px;
+  }
+  
+  .kea-events__heading {
+    font-size: 2.4rem;
+  }
+  
+  .kea-events__grid {
+    gap: 25px;
+  }
+}
+
+@media (max-width: 992px) {
+  .kea-events {
+    padding: 70px 20px;
+  }
+  
+  .kea-events__grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .kea-events {
+    padding: 60px 15px;
+  }
+  
+  .kea-events__heading {
+    font-size: 2rem;
+  }
+  
+  .kea-events__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .kea-events__header-right {
+    width: 100%;
+    justify-content: flex-start;
+    margin-top: 20px;
+  }
+  
+  .kea-events__explore-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .kea-events__grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+@media (max-width: 576px) {
+  .kea-events {
+    padding: 50px 15px;
+  }
+  
+  .kea-events__badge {
+    font-size: 0.9rem;
+    padding: 6px 14px;
+  }
+  
+  .kea-events__heading {
+    font-size: 1.8rem;
+  }
+}

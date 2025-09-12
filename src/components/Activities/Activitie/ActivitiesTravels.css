@@ -1,0 +1,234 @@
+/* ActivitiesTravels.css */
+:root {
+  --kea-primary: #0e5c36;      /* Deep green */
+  --kea-secondary: #18894f;    /* Lighter green */
+  --kea-accent: #9cebbc;       /* Light mint green for accents */
+  --kea-dark: #111111;         /* Near-black */
+  --kea-gray: #444444;         /* Dark gray */
+  --kea-light-gray: #f5f5f5;   /* Light gray background */
+  --kea-white: #ffffff;        /* White */
+  --kea-shadow: rgba(0, 0, 0, 0.1); /* Shadow color */
+}
+
+.kea-activities {
+  color: var(--kea-dark);
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--kea-white);
+}
+
+/* Hero Section */
+.kea-activities__hero {
+  position: relative;
+  height: 70vh;
+  min-height: 500px;
+  overflow: hidden;
+}
+
+.kea-activities__hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.7);
+}
+
+.kea-activities__hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2rem;
+  background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.6));
+  color: var(--kea-white);
+}
+
+.kea-activities__hero-title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.kea-activities__hero-text {
+  font-size: 1.25rem;
+  max-width: 800px;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.kea-activities__cta-btn {
+  display: inline-block;
+  background-color: var(--kea-primary);
+  color: var(--kea-white);
+  padding: 0.8rem 2rem;
+  border-radius: 50px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(14, 92, 54, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.kea-activities__cta-btn:hover {
+  background-color: var(--kea-secondary);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(14, 92, 54, 0.4);
+}
+
+/* Section Styles */
+.kea-activities__section {
+  padding: 5rem 2rem;
+}
+
+.kea-activities__section--travel {
+  background-color: var(--kea-light-gray);
+}
+
+.kea-activities__section-title {
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 3rem;
+  color: var(--kea-dark);
+  position: relative;
+  padding-bottom: 1rem;
+}
+
+.kea-activities__section-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  background-color: var(--kea-primary);
+  border-radius: 2px;
+}
+
+/* Activities Grid */
+.kea-activities__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.kea-activities__card {
+  background-color: var(--kea-white);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 8px 20px var(--kea-shadow);
+  transition: all 0.3s ease;
+  border-top: 4px solid var(--kea-primary);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.kea-activities__card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+}
+
+.kea-activities__card-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--kea-primary);
+}
+
+.kea-activities__card-text {
+  color: var(--kea-gray);
+  line-height: 1.6;
+  flex-grow: 1;
+}
+
+/* Travel Grid */
+.kea-activities__travel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.kea-activities__travel-card {
+  background-color: var(--kea-white);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 20px var(--kea-shadow);
+  transition: all 0.3s ease;
+}
+
+.kea-activities__travel-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+}
+
+.kea-activities__travel-image {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.kea-activities__travel-card:hover .kea-activities__travel-image {
+  transform: scale(1.05);
+}
+
+.kea-activities__travel-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin: 1.5rem 1.5rem 0.5rem;
+  color: var(--kea-primary);
+}
+
+.kea-activities__travel-text {
+  padding: 0 1.5rem 1.5rem;
+  color: var(--kea-gray);
+  line-height: 1.6;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .kea-activities__hero-title {
+    font-size: 2.5rem;
+  }
+  
+  .kea-activities__hero-text {
+    font-size: 1rem;
+  }
+  
+  .kea-activities__section {
+    padding: 3rem 1.5rem;
+  }
+  
+  .kea-activities__section-title {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .kea-activities__hero-title {
+    font-size: 2rem;
+  }
+  
+  .kea-activities__cta-btn {
+    padding: 0.7rem 1.5rem;
+    font-size: 1rem;
+  }
+  
+  .kea-activities__grid,
+  .kea-activities__travel-grid {
+    grid-template-columns: 1fr;
+  }
+}

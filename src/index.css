@@ -1,0 +1,14 @@
+:root {
+  --topbar-height: 84px;   /* desktop height; JS will set 0px when hidden */
+  --navbar-height: 65px;   /* tweak to your real navbar padding */
+}
+
+body, #root {
+  margin: 0;
+  padding-top: calc(var(--topbar-height) + var(--navbar-height));
+  font-family: system-ui, sans-serif;
+  transition: padding-top .25s ease;
+}
+
+
+

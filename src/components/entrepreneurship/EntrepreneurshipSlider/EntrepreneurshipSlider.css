@@ -1,0 +1,322 @@
+.kea-slider {
+  position: relative;
+  padding: 100px 20px;
+  overflow: hidden;
+  background-color: #0a1a10;
+  color: #ffffff;
+}
+
+/* Background elements */
+.kea-slider__background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.kea-slider__bg-circle {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.1;
+  filter: blur(60px);
+}
+
+.kea-slider__bg-circle--1 {
+  top: -150px;
+  right: -50px;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, #4caf50 0%, #1b5e20 100%);
+}
+
+.kea-slider__bg-circle--2 {
+  bottom: -200px;
+  left: -100px;
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle, #2e7d32 0%, #0a1a10 100%);
+}
+
+.kea-slider__bg-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    linear-gradient(rgba(10, 26, 16, 0.8) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(10, 26, 16, 0.8) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.1;
+}
+
+.kea-slider__container {
+  position: relative;
+  max-width: 1280px;
+  margin: 0 auto;
+  z-index: 1;
+}
+
+/* Header styles */
+.kea-slider__header {
+  text-align: center;
+  margin-bottom: 60px;
+  position: relative;
+}
+
+.kea-slider__title {
+  font-size: 2.8rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 20px;
+  position: relative;
+  display: inline-block;
+}
+
+.kea-slider__title-decoration {
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(90deg, #4caf50, #1b5e20);
+  margin: 0 auto;
+  border-radius: 2px;
+}
+
+/* Swiper customization */
+.kea-slider__swiper {
+  width: 100%;
+  padding-bottom: 70px;
+}
+
+.kea-slider__slide {
+  height: auto;
+  transition: transform 0.3s ease;
+}
+
+/* Card styling */
+.kea-slider__card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.4s ease;
+  border: 1px solid rgba(76, 175, 80, 0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.kea-slider__card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #4caf50, #1b5e20);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.kea-slider__card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(76, 175, 80, 0.3);
+}
+
+.kea-slider__card:hover::before {
+  opacity: 1;
+}
+
+.kea-slider__logo-container {
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.kea-slider__logo {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  transition: transform 0.5s ease;
+}
+
+.kea-slider__card:hover .kea-slider__logo {
+  transform: scale(1.05);
+}
+
+.kea-slider__content {
+  padding: 30px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.kea-slider__company-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 15px;
+  line-height: 1.3;
+}
+
+.kea-slider__description {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 25px;
+  flex-grow: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.kea-slider__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #2e7d32;
+  color: #ffffff;
+  text-decoration: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  align-self: flex-start;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.kea-slider__btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transition: left 0.7s ease;
+}
+
+.kea-slider__btn:hover {
+  background-color: #1b5e20;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+.kea-slider__btn:hover::before {
+  left: 100%;
+}
+
+.kea-slider__icon {
+  font-size: 0.9rem;
+  transition: transform 0.3s ease;
+}
+
+.kea-slider__btn:hover .kea-slider__icon {
+  transform: translateX(3px);
+}
+
+/* Custom pagination */
+.kea-slider__bullet {
+  width: 12px;
+  height: 12px;
+  display: inline-block;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  margin: 0 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  opacity: 1;
+}
+
+.kea-slider__bullet--active {
+  background: #4caf50;
+  width: 30px;
+  border-radius: 10px;
+}
+
+/* Responsive styles */
+@media (max-width: 1024px) {
+  .kea-slider {
+    padding: 80px 20px;
+  }
+  
+  .kea-slider__title {
+    font-size: 2.4rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .kea-slider {
+    padding: 60px 15px;
+  }
+  
+  .kea-slider__title {
+    font-size: 2rem;
+  }
+  
+  .kea-slider__logo-container {
+    height: 150px;
+  }
+  
+  .kea-slider__content {
+    padding: 25px;
+  }
+  
+  .kea-slider__company-name {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .kea-slider {
+    padding: 50px 15px;
+  }
+  
+  .kea-slider__title {
+    font-size: 1.8rem;
+  }
+  
+  .kea-slider__logo-container {
+    height: 120px;
+  }
+  
+  .kea-slider__content {
+    padding: 20px;
+  }
+  
+  .kea-slider__company-name {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+  }
+  
+  .kea-slider__description {
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+  }
+  
+  .kea-slider__btn {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+  }
+}

@@ -1,0 +1,58 @@
+/* ----------  TOPBAR  ---------- */
+.topbar{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+
+  background: var(--light-bg, #f2f8fd);
+  color: #6b7785;                   /* soft grey-blue like screenshot */
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.92rem;
+  padding: 16px 12px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+
+  z-index: 1200;
+  transition: transform .35s ease;
+}
+.topbar.hide{
+  transform: translateY(-100%);     /* slide out of view */
+}
+
+/* generic row */
+.tb-row{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* “Follow Us” row */
+.tb-row.social{
+  gap: 14px;
+}
+.follow{
+  font-weight: 500;
+  margin-right: 4px;
+}
+
+/* links & icons */
+.tb-row a{
+  color: inherit;
+  text-decoration: none;
+  display: inline-flex;
+}
+.tb-row a:hover{
+  color: var(--primary-color, #1974b0);
+  transform: translateY(-2px);
+  transition: color .25s, transform .25s;
+}
+
+/* ----------  RESPONSIVE  ---------- */
+@media (max-width: 420px){
+  .topbar{ font-size: 0.75rem; }
+  .tb-row.social{ gap: 10px; }
+}

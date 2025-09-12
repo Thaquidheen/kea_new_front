@@ -1,0 +1,148 @@
+/* Global Theme */
+:root {
+    --primary-color: #267540;
+    --dark-color: #0A0909;
+    --light: #E0F2E9;
+    --white: #ffffff;
+  }
+  
+  /* Goal Section */
+  .goal-section {
+    background-color: var(--light);
+    padding: 60px 20px;
+  }
+  
+  .goal-container {
+    max-width: 1200px;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Goal Header (Title + Description) */
+  .goal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 40px;
+  }
+  
+  .goal-title {
+    font-size: 2.8rem;
+    font-weight: bold;
+    color: var(--dark-color);
+    position: relative;
+    display: inline-block;
+    max-width: 50%;
+  }
+  
+  .star {
+    color: #F95794;
+    font-size: 1.5rem;
+    position: absolute;
+    top: -10px;
+    right: -25px;
+  }
+  
+  .goal-subtext {
+    font-size: 1rem;
+    color: #555;
+    max-width: 50%;
+    line-height: 1.5;
+  }
+  
+  /* Goal Cards */
+  .goal-cards {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  
+  /* Goal Card */
+  .goal-card {
+    background: var(--white);
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    border: 2px solid var(--dark-color);
+    transition: transform 0.3s ease-in-out;
+    box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.05);
+    flex: 1;
+  }
+  
+  .goal-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  /* Goal Icon */
+  .goal-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: var(--white);
+    margin: auto;
+    margin-bottom: 15px;
+  }
+  
+  /* Goal Card Text */
+  .goal-card h3 {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--dark-color);
+    margin-bottom: 10px;
+  }
+  
+  .goal-card p {
+    font-size: 0.9rem;
+    color: #777;
+    line-height: 1.5;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 1024px) {
+    .goal-header {
+      flex-direction: column;
+
+    }
+  
+
+    .goal-cards {
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    .goal-card {
+      width: 100%;
+      padding: 10px;
+    }
+    .goal-title,
+    .goal-subtext {
+      max-width: 100%;
+      text-align: left; /* Ensures text stays left-aligned */
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .goal-title {
+      font-size: 2.2rem;
+    }
+  
+    .goal-cards {
+      flex-direction: column;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .goal-title {
+      font-size: 1.8rem;
+    }
+    .goal-subtext {
+        text-align: left; /* Ensures text is not centered on small screens */
+      }
+  }
+  

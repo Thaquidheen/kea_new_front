@@ -1,0 +1,149 @@
+/* Global Theme */
+:root {
+    --primary-color: #267540; /* Green */
+    --dark-color: #0A0909; /* Dark Black */
+    --white: #ffffff;
+    --light-gray: #F5F5F5;
+    --button-color: #F8B400;
+  }
+  
+  /* Team Section */
+  .team-section {
+    padding: 60px 20px;
+    background: var(--white);
+  }
+  
+  .team-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  
+  .team-header h2 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--dark-color);
+  }
+  
+  .team-header p {
+    font-size: 1rem;
+    color: var(--dark-color);
+    margin: 15px auto;
+    max-width: 600px;
+  }
+  
+  .explore-btn {
+    background: var(--button-color);
+    color: var(--white);
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s;
+    margin-top: 10px;
+  }
+  
+  .explore-btn:hover {
+    background: #e69a00;
+  }
+  
+  /* Swiper Container */
+  .team-slider {
+    /* Center the Swiper container and remove overflow issues */
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    overflow: hidden; /* Changed from visible to hidden for better layout */
+  }
+  
+  /* Ensures slides are centered within Swiper */
+  .team-slider .swiper-wrapper {
+    display: flex;
+
+    /* If you want the slides to be strictly centered, 
+       keep centeredSlides and these flex properties */
+  }
+  
+  /* Each Slide/Card */
+  .team-card {
+    text-align: center;
+    padding: 20px;
+    border-radius: 10px;
+    background: var(--light-gray);
+    transition: 0.3s;
+    width: 100%;
+    box-sizing: border-box; /* Ensure proper sizing */
+  }
+  
+  .team-image-container {
+    position: relative;
+    border-radius: 15px;
+    overflow: hidden;
+  }
+  
+  .team-image {
+    width: auto;
+    height: 200px;
+    border-radius: 15px;
+  }
+  
+  .team-icons {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 10px;
+    border-radius: 10px;
+  }
+  
+  .icon {
+    font-size: 18px;
+    color: var(--white);
+    cursor: pointer;
+  }
+  
+  .icon:hover {
+    color: var(--primary-color);
+  }
+  
+  .team-card h3 {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: var(--dark-color);
+    margin-top: 10px;
+  }
+  
+  .team-card p {
+    font-size: 1rem;
+    color: var(--dark-color);
+  }
+  
+  /* Swiper Navigation */
+  .swiper-button-prev,
+  .swiper-button-next {
+    color: var(--primary-color) !important;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .team-header h2 {
+      font-size: 2rem;
+    }
+  
+    .team-header p {
+      font-size: 0.9rem;
+    }
+  
+    .team-card h3 {
+      font-size: 1.2rem;
+    }
+  
+    .team-card p {
+      font-size: 0.9rem;
+    }
+  }
+  

@@ -1,0 +1,241 @@
+/* Global Theme */
+:root {
+    --primary-color: #267540;
+    --dark-color: #0A0909;
+    --text-gray: #5a5a5a;
+    --btn-hover: #1f5f33;
+  }
+  
+  /* Alumni Section */
+  .alumni-section {
+    background-color: #f8fafc;
+    padding: 60px 20px;
+  }
+  
+  .alumni-container {
+    max-width: 1200px;
+    margin: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 50px;
+  }
+  
+  /* Mentor Cards */
+  .mentors {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+  
+  .mentor-card {
+    width: 260px;
+    background: var(--primary-color);
+    border-radius: 15px;
+    overflow: hidden;
+    color: white;
+    text-align: center;
+    position: relative;
+    padding-bottom: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+  }
+  
+  .mentor-card .mentor-img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    border-bottom: 5px solid var(--dark-color);
+  }
+  
+  .mentor-info {
+    padding: 15px;
+  }
+  
+  .mentor-info h3 {
+    font-size: 1.5rem;
+  }
+  
+  .mentor-info p {
+    font-size: 1rem;
+    opacity: 0.9;
+  }
+  
+  /* Social Icons */
+  .social-icons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin: 10px 0;
+  }
+  
+  .icon {
+    font-size: 20px;
+    cursor: pointer;
+    color: white;
+    transition: 0.3s;
+  }
+  
+  .icon:hover {
+    color: var(--btn-hover);
+  }
+  
+  /* View Profile Button */
+  .view-profile {
+    display: inline-block;
+    font-size: 14px;
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+    margin-top: 10px;
+  }
+  
+  /* Right-Side Mini Mentors */
+  .mentors-right {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .mentor-mini {
+    width: 120px;
+    height: 120px;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .mentor-mini .mentor-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  /* Right Side - Text Content */
+  .alumni-text {
+    flex: 1;
+  }
+  
+  .alumni-text h2 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--dark-color);
+    margin-bottom: 15px;
+  }
+  
+  .alumni-text p {
+    font-size: 1.1rem;
+    color: var(--text-gray);
+    margin-bottom: 25px;
+  }
+  
+  /* View All Button */
+  .view-all {
+    background: #f8b400;
+    color: white;
+    padding: 14px 30px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s;
+    box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .view-all:hover {
+    background: #e69a00;
+    transform: scale(1.05);
+  }
+  
+  /* FULLY RESPONSIVE DESIGN */
+  @media (max-width: 1024px) {
+    .alumni-container {
+      flex-direction: column;
+      text-align: center;
+      gap: 40px;
+    }
+  
+    .mentors {
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+  
+    .mentors-right {
+      flex-direction: row;
+      justify-content: center;
+      gap: 15px;
+    }
+  
+    .mentor-mini {
+      width: 100px;
+      height: 100px;
+    }
+  
+    .alumni-text {
+      max-width: 500px;
+      text-align: center;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .alumni-container {
+      flex-direction: column;
+      text-align: center;
+    }
+  
+    .mentors {
+      flex-direction: column;
+      gap: 20px;
+      align-items: center;
+    }
+  
+    .mentor-card {
+      width: 90%;
+      padding-bottom: 15px;
+    }
+  
+    .mentors-right {
+      flex-direction: row;
+      gap: 10px;
+      justify-content: center;
+    }
+  
+    .mentor-mini {
+      width: 80px;
+      height: 80px;
+    }
+  
+    .alumni-text h2 {
+      font-size: 2rem;
+    }
+  
+    .alumni-text p {
+      font-size: 1rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .mentor-card {
+      width: 100%;
+      padding-bottom: 15px;
+    }
+  
+    .mentor-mini {
+      width: 70px;
+      height: 70px;
+    }
+  
+    .alumni-text h2 {
+      font-size: 1.8rem;
+    }
+  
+    .alumni-text p {
+      font-size: 0.9rem;
+    }
+  
+    .view-all {
+      width: 100%;
+    }
+  }
+  

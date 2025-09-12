@@ -1,0 +1,120 @@
+/* Global Theme */
+:root {
+    --primary-color: #267540;
+    --dark-color: #0A0909;
+    --light-bg: #f8fafc;
+    --text-color: #333;
+  }
+  
+  /* Section Styling */
+  .latest-articles {
+    max-width: 1200px;
+    margin: auto;
+    padding: 40px 20px;
+  }
+  
+  .latest-articles h2 {
+    font-size: 2.5rem;
+    color: var(--dark-color);
+    margin-bottom: 20px;
+  }
+  
+  /* Articles Grid */
+  .articles-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  
+  .article-card {
+    background: var(--light-bg);
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .article-card img {
+    width: 100%;
+    border-radius: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .article-date {
+    font-size: 0.9rem;
+    color: var(--primary-color);
+  }
+  
+  .article-card h3 {
+    font-size: 1.2rem;
+    color: var(--dark-color);
+  }
+  
+  .article-description {
+    font-size: 0.95rem;
+    color: var(--text-color);
+    margin-top: 5px;
+  }
+  
+  /* Pagination Controls */
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    gap: 8px;
+  }
+  
+  .pagination-btn {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 25px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  
+  .pagination-btn:hover {
+    background: #1f5a30;
+  }
+  
+  .pagination-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+  
+  .page-btn {
+    background: white;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    padding: 8px 12px;
+    border-radius: 50%;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  
+  .page-btn.active {
+    background: var(--primary-color);
+    color: white;
+  }
+  
+  .page-btn:hover {
+    background: var(--primary-color);
+    color: white;
+  }
+  
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .articles-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .articles-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  

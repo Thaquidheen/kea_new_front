@@ -1,0 +1,129 @@
+/* Login.css */
+
+/* Root variables for easily changing theme colors */
+:root {
+  --primary-color: #2ecc71;  /* Green accent */
+  --background-color: #000000; /* Black background */
+  --text-color: #ffffff;      /* White text */
+}
+
+/* Apply global background and text color */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+
+  /* color: var(--text-color); */
+}
+
+/* Container styling */
+.login-container {
+  max-width: 400px;
+  width: 90%;              /* Let it shrink on smaller screens */
+  margin: 50px auto;
+  padding: 30px;
+  background-color: #1a1a1a; /* Slightly lighter black background for contrast */
+  border-radius: 8px;
+  border: 2px solid var(--primary-color);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  margin-top: 7rem;
+}
+
+/* Heading style */
+.login-container h2 {
+  margin-bottom: 20px;
+  text-align: center;
+  color: var(--primary-color);
+  font-size: 1.8rem;
+}
+
+/* Form styling */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Label styling */
+.login-form label {
+  font-weight: bold;
+  color: white;
+}
+
+/* Input styling */
+.login-form input {
+  padding: 10px;
+  font-size: 1rem;
+  border-radius: 4px;
+  border: 1px solid #666;
+  background-color: #333;    /* Dark input background */
+  color: #fff;              /* White text inside input */
+  transition: border-color 0.2s;
+}
+
+.login-form input::placeholder {
+  color: #bbb;
+}
+
+.login-form input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+/* Button styling */
+.login-form button {
+  padding: 12px;
+  font-size: 1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 4px;
+  background-color: var(--primary-color);
+  color: #ffffff;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.1s;
+}
+
+.login-form button:hover {
+  background-color: #27ae60; /* Slightly different shade of green */
+}
+
+.login-form button:active {
+  transform: scale(0.98);
+}
+
+/* Links section */
+.login-links {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+}
+
+/* Links styling */
+.login-links a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: bold;
+  transition: text-decoration 0.2s;
+}
+
+.login-links a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive breakpoint for smaller screens */
+@media (max-width: 480px) {
+  .login-container {
+    margin: 20px auto;
+    padding: 20px;
+  }
+
+  .login-container h2 {
+    font-size: 1.5rem;
+  }
+
+  .login-form button {
+    font-size: 0.9rem;
+    padding: 10px;
+  }
+}

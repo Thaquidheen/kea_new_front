@@ -1,0 +1,328 @@
+/* AboutSection.css - Modern green, black, and white theme with BEM naming */
+
+:root {
+  --primary-green: #0A8A43;
+  --primary-green-light: #10B655;
+  --primary-green-dark: #076e35;
+  --off-white: #F8F8F8;
+  --true-white: #FFFFFF;
+  --soft-black: #111111;
+  --gray-dark: #333333;
+  --gray-medium: #666666;
+  --gray-light: #E0E0E0;
+  --shadow-soft: 0 8px 30px rgba(0, 0, 0, 0.06);
+  --shadow-medium: 0 15px 35px rgba(0, 0, 0, 0.1);
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --transition-normal: 0.3s ease;
+}
+
+/* Main Section Styles */
+.kea-about {
+  position: relative;
+  padding: 100px 0;
+  background-color: var(--true-white);
+  overflow: hidden;
+}
+
+.kea-about::before {
+  content: '';
+  position: absolute;
+  width: 40%;
+  height: 400px;
+  bottom: -150px;
+  left: -100px;
+  background-color: rgba(10, 138, 67, 0.03);
+  border-radius: 100%;
+  transform: rotate(-15deg);
+  z-index: 0;
+}
+
+.kea-about__container {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 0 30px;
+  position: relative;
+  z-index: 1;
+}
+
+.kea-about__content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 60px;
+}
+
+/* Left Side - Text Content */
+.kea-about__text-block {
+  flex: 1;
+  max-width: 600px;
+}
+
+.kea-about__nav {
+  margin-bottom: 24px;
+}
+
+.kea-about__nav-text {
+  font-size: 14px;
+  color: var(--gray-medium);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kea-about__nav-divider {
+  color: var(--primary-green);
+  font-weight: 600;
+}
+
+.kea-about__nav-current {
+  color: var(--primary-green);
+  font-weight: 600;
+}
+
+.kea-about__heading {
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  font-weight: 800;
+  color: var(--soft-black);
+  margin-bottom: 30px;
+  line-height: 1.1;
+  position: relative;
+}
+
+.kea-about__heading-accent {
+  position: relative;
+  display: inline-block;
+}
+
+.kea-about__heading-accent::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 5px;
+  width: 100%;
+  height: 8px;
+  background-color: rgba(10, 138, 67, 0.15);
+  z-index: -1;
+}
+
+.kea-about__text-wrapper {
+  position: relative;
+}
+
+.kea-about__paragraph {
+  font-size: 17px;
+  line-height: 1.7;
+  color: var(--gray-medium);
+  margin-bottom: 30px;
+}
+
+.kea-about__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--primary-green);
+  text-decoration: none;
+  padding: 8px 0;
+  position: relative;
+  transition: var(--transition-normal);
+}
+
+.kea-about__link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: var(--primary-green);
+  transition: var(--transition-normal);
+}
+
+.kea-about__link:hover {
+  color: var(--primary-green-dark);
+}
+
+.kea-about__link:hover::after {
+  width: 100%;
+}
+
+.kea-about__link-icon {
+  transition: transform var(--transition-normal);
+}
+
+.kea-about__link:hover .kea-about__link-icon {
+  transform: translateX(5px) translateY(-5px);
+}
+
+/* Right Side - Image */
+.kea-about__media {
+  flex: 1;
+  position: relative;
+  min-height: 450px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.kea-about__media-backdrop {
+  position: absolute;
+  width: 90%;
+  height: 90%;
+  right: 0;
+  top: 10%;
+  background-color: rgba(10, 138, 67, 0.05);
+  border-radius: var(--radius-lg);
+  z-index: 1;
+}
+
+.kea-about__media-frame {
+  position: relative;
+  width: 85%;
+  height: 450px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-medium);
+  z-index: 2;
+  transform: translateX(-20px);
+}
+
+.kea-about__media-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 1.5s ease;
+}
+
+.kea-about__media-frame:hover .kea-about__media-image {
+  transform: scale(1.05);
+}
+
+.kea-about__media-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 25px;
+  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+  display: flex;
+  justify-content: space-between;
+  color: var(--true-white);
+}
+
+.kea-about__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.kea-about__stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--true-white);
+}
+
+.kea-about__stat-label {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.kea-about__media-accent {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  right: 0;
+  bottom: 0;
+  border: 3px solid var(--primary-green);
+  border-radius: var(--radius-md);
+  z-index: 1;
+  opacity: 0.6;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 1100px) {
+  .kea-about {
+    padding: 80px 0;
+  }
+  
+  .kea-about__content {
+    gap: 40px;
+  }
+  
+  .kea-about__media-frame {
+    height: 400px;
+  }
+}
+
+@media screen and (max-width: 900px) {
+  .kea-about__content {
+    flex-direction: column;
+    gap: 60px;
+  }
+  
+  .kea-about__text-block {
+    max-width: 100%;
+  }
+  
+  .kea-about__media {
+    width: 100%;
+  }
+  
+  .kea-about__media-frame {
+    width: 90%;
+    transform: translateX(0);
+  }
+  
+  .kea-about__media-backdrop {
+    width: 95%;
+    right: auto;
+    top: 15%;
+  }
+  
+  .kea-about__media-accent {
+    width: 80px;
+    height: 80px;
+    right: 5%;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .kea-about {
+    padding: 60px 0;
+  }
+  
+  .kea-about__container {
+    padding: 0 20px;
+  }
+  
+  .kea-about__heading {
+    font-size: 2rem;
+  }
+  
+  .kea-about__paragraph {
+    font-size: 16px;
+  }
+  
+  .kea-about__media-frame {
+    height: 350px;
+  }
+  
+  .kea-about__media-overlay {
+    padding: 20px;
+  }
+  
+  .kea-about__stat-value {
+    font-size: 24px;
+  }
+  
+  .kea-about__stat-label {
+    font-size: 12px;
+  }
+  
+  .kea-about__media-accent {
+    display: none;
+  }
+}

@@ -1,0 +1,242 @@
+.kea-hero {
+  padding: 100px 20px;
+  background-color: #ffffff;
+  position: relative;
+  overflow: hidden;
+}
+
+.kea-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 50%;
+  height: 100%;
+  background-color: #f2f9f4;
+  z-index: 0;
+  clip-path: polygon(15% 0, 100% 0, 100% 100%, 0% 100%);
+}
+
+.kea-hero__container {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  position: relative;
+  z-index: 1;
+}
+
+.kea-hero__content {
+  flex: 1;
+  max-width: 600px;
+  padding-right: 20px;
+}
+
+.kea-hero__breadcrumb {
+  font-size: 0.9rem;
+  color: #666666;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kea-hero__breadcrumb-separator {
+  color: #999999;
+}
+
+.kea-hero__breadcrumb-active {
+  color: #156535;
+  font-weight: 600;
+}
+
+.kea-hero__title {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: #111111;
+  margin-bottom: 30px;
+  line-height: 1.1;
+  position: relative;
+  padding-bottom: 20px;
+}
+
+.kea-hero__title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(90deg, #156535, #4caf50);
+  border-radius: 2px;
+}
+
+.kea-hero__description {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #444444;
+  margin-bottom: 30px;
+}
+
+.kea-hero__image-wrapper {
+  flex: 1;
+  min-width: 300px;
+  position: relative;
+}
+
+.kea-hero__image-container {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  transform: perspective(1000px) rotateY(-5deg);
+  transition: transform 0.6s ease;
+}
+
+.kea-hero__image-container:hover {
+  transform: perspective(1000px) rotateY(0deg);
+}
+
+.kea-hero__image {
+  width: 100%;
+  height: 500px;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.6s ease;
+}
+
+.kea-hero__image-container:hover .kea-hero__image {
+  transform: scale(1.05);
+}
+
+.kea-hero__image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(21, 101, 53, 0.05),
+    rgba(21, 101, 53, 0.2)
+  );
+}
+
+.kea-hero__accent-circle {
+  position: absolute;
+  bottom: -20px;
+  left: -20px;
+  width: 80px;
+  height: 80px;
+  background-color: #156535;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 20px rgba(21, 101, 53, 0.3);
+  animation: pulse 2s infinite ease-in-out;
+  z-index: 2;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 10px 20px rgba(21, 101, 53, 0.3);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 15px 25px rgba(21, 101, 53, 0.4);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 10px 20px rgba(21, 101, 53, 0.3);
+  }
+}
+
+.kea-hero__accent-icon {
+  font-size: 1.8rem;
+  color: white;
+}
+
+/* Responsive styles */
+@media (max-width: 1024px) {
+  .kea-hero {
+    padding: 80px 20px;
+  }
+  
+  .kea-hero__title {
+    font-size: 3rem;
+  }
+  
+  .kea-hero__image {
+    height: 450px;
+  }
+}
+
+@media (max-width: 768px) {
+  .kea-hero {
+    padding: 60px 20px;
+  }
+  
+  .kea-hero__container {
+    flex-direction: column;
+  }
+  
+  .kea-hero__content {
+    max-width: 100%;
+    padding-right: 0;
+  }
+  
+  .kea-hero__title {
+    font-size: 2.5rem;
+  }
+  
+  .kea-hero__image-wrapper {
+    width: 100%;
+  }
+  
+  .kea-hero__image {
+    height: 400px;
+  }
+  
+  .kea-hero::before {
+    width: 100%;
+    height: 50%;
+    top: auto;
+    bottom: 0;
+    clip-path: polygon(0 30%, 100% 0, 100% 100%, 0 100%);
+  }
+}
+
+@media (max-width: 480px) {
+  .kea-hero {
+    padding: 50px 15px;
+  }
+  
+  .kea-hero__title {
+    font-size: 2rem;
+    padding-bottom: 15px;
+  }
+  
+  .kea-hero__description {
+    font-size: 1rem;
+  }
+  
+  .kea-hero__image {
+    height: 300px;
+  }
+  
+  .kea-hero__accent-circle {
+    width: 60px;
+    height: 60px;
+    bottom: -15px;
+    left: -15px;
+  }
+  
+  .kea-hero__accent-icon {
+    font-size: 1.4rem;
+  }
+}
