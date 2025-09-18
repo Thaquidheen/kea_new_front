@@ -2,13 +2,12 @@
 import './App.css';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from './components/common/navbar/Navbar';
-import CourseSlider from './components/CourseSlider/CourseSlider';
-import HeroSection from './components/herosection/HeroSection';
+
 import Home from './pages/Home';
 import Footer from './components/common/footer/Footer';
-import AboutSection from './components/Aboutcomp/AboutSection/AboutSection';
+
 import About from './pages/About';
-import Trips from './pages/Trips';
+
 import Entrepreneurship from './pages/Entrepreneurship';
 import LatestNewsArticles from './pages/LatestNewsArticles';
 import ActivitiesTravels from './pages/ActivitiesTravelPage';
@@ -23,7 +22,7 @@ import AllEventsPage from './components/events/AllEvents/AllEventsPage';
 import EventDetailsPage from './components/events/EventDetailsPage/EventDetailsPage';
 import EventRegistrationPage from './components/events/EventRegistrationPage/EventRegistrationPage';
 import QRCodeScanner from './components/QRCodeScanner/QRCodeScanner';
-import TopBar from './components/common/Topbar/Topbar';
+
 import UserManagement from './components/testing/UserManagement';
 import { ModalProvider } from './contexts/ModalContext';
 import ScrollToTop from './components/ScrollToTop/ScrollToTop';
@@ -32,15 +31,18 @@ import QRCheckInPage from './components/checkin/QRCheckInPage';
 import PasswordReset from './pages/forgotpassowrd/PasswordReset';
 import ForgotPassword from './pages/forgotpassowrd/ForgotPassword';
 import UserProfileEditor from './pages/Edits/UserProfileEditor';
-import NotificationProvider from './contexts/NotificationContext';
+
+import './contexts/notifications.css';
+import { NotificationProvider } from './contexts/NotificationContext';
 
 
 
 
 function App() {
   return (
-    <Router>
          <NotificationProvider>
+    <Router>
+    
       {/* <TopBar/> */}
     <Navbar />
     <ModalProvider>
@@ -93,8 +95,9 @@ function App() {
     </Routes>
     </ModalProvider>
     <Footer/>
-    </NotificationProvider>
+
   </Router>
+      </NotificationProvider>
   );
 }
 

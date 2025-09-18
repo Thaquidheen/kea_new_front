@@ -27,7 +27,16 @@ export const StepOne = ({
     hasSpecialChar: false,
     isValid: false
   });
-  const { success, error, info, warning } = useNotification();
+  
+  // Get notification functions - with fallback to console.log if not available
+  const notificationContext = useNotification();
+  const { success, error, info, warning } = notificationContext || {};
+  
+  // Create fallback functions if notification context is not available
+  const safeSuccess = success || ((msg) => console.log('SUCCESS:', msg));
+  const safeError = error || ((msg) => console.error('ERROR:', msg));
+  const safeInfo = info || ((msg) => console.log('INFO:', msg));
+  const safeWarning = warning || ((msg) => console.warn('WARNING:', msg));
   
   // Update preview when formData changes
   useEffect(() => {
@@ -42,11 +51,11 @@ export const StepOne = ({
       try {
         await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
       } catch (err) {
-        error("Some features may be limited.");
+        safeError("Some features may be limited.");
       }
     };
     loadModels();
-  }, [error]);
+  }, [safeError]);
   
   // Check existing photo for face detection on component load
   useEffect(() => {
@@ -139,24 +148,24 @@ export const StepOne = ({
     onFaceDetectionUpdate?.(false); // Notify parent
   };
   
-  // Enhanced file change handler
+  // Enhanced file change handler with safe notification functions
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       // Validate file type
       if (!file.type.startsWith('image/')) {
-        error("Please select a valid image file");
+        safeError("Please select a valid image file");
         return;
       }
       
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        error("Image size exceeds 5MB limit. Please select a smaller image.");
+        safeError("Image size exceeds 5MB limit. Please select a smaller image.");
         return;
       }
       
       setIsProcessing(true);
-      info(`Processing image: ${file.name}`);
+      safeInfo(`Processing image: ${file.name}`);
       
       // Create preview for immediate feedback
       const reader = new FileReader();
@@ -178,18 +187,18 @@ export const StepOne = ({
             if (detection) {
               setFaceDetected(true);
               onFaceDetectionUpdate?.(true); // Notify parent
-              success("Face detected and verified in photo!", 3000);
+              safeSuccess("Face detected and verified in photo!");
             } else {
               setFaceDetected(false);
               onFaceDetectionUpdate?.(false); // Notify parent
-              warning("No face detected in the photo. Please upload a clear photo with your face visible.");
+              safeWarning("No face detected in the photo. Please upload a clear photo with your face visible.");
             }
             setIsProcessing(false);
           } catch (error) {
             console.error("Face detection error:", error);
             setFaceDetected(false);
             onFaceDetectionUpdate?.(false); // Notify parent
-            error("Error processing face detection. Please try another photo.");
+            safeError("Error processing face detection. Please try another photo.");
             setIsProcessing(false);
           }
         };
@@ -204,12 +213,12 @@ export const StepOne = ({
   const handleCapture = async () => {
     if (webcamRef.current) {
       setIsProcessing(true);
-      info("Capturing photo...");
+      safeInfo("Capturing photo...");
       
       const imageSrc = webcamRef.current.getScreenshot();
   
       if (!imageSrc) {
-        error("Could not capture image, please try again.");
+        safeError("Could not capture image, please try again.");
         setIsProcessing(false);
         return;
       }
@@ -231,23 +240,23 @@ export const StepOne = ({
             setFaceDetected(true);
             handleCapturePhoto(imageSrc);
             onFaceDetectionUpdate?.(true); // Notify parent
-            success("Photo captured and face verified successfully!");
+            safeSuccess("Photo captured and face verified successfully!");
           } else {
             setFaceDetected(false);
             handleCapturePhoto(imageSrc);
             onFaceDetectionUpdate?.(false); // Notify parent
-            warning("No face detected in the captured photo. Please retake with your face clearly visible.");
+            safeWarning("No face detected in the captured photo. Please retake with your face clearly visible.");
           }
           handleToggleCamera();  // close webcam view
           setIsProcessing(false);
         } catch (err) {
-          error("Error processing face detection. Please try again.");
+          safeError("Error processing face detection. Please try again.");
           setIsProcessing(false);
         }
       };
   
       img.onerror = () => {
-        error("Failed to load captured image.");
+        safeError("Failed to load captured image.");
         setIsProcessing(false);
       };
     }
@@ -282,8 +291,9 @@ export const StepOne = ({
           required
         />
       </div>
+      
       <div className="form-group">
-        <label htmlFor="email">Email</label>
+        <label htmlFor="email">Email *</label>
         <input
           id="email"
           name="email"
@@ -318,75 +328,76 @@ export const StepOne = ({
 
             <button 
               type="button" 
-              className={`photo-btn camera-btn ${useCamera ? 'active' : ''}`} 
+              className={`photo-btn camera-btn ${useCamera ? 'active' : ''}`}
               onClick={handleToggleCamera}
-              disabled={isProcessing}
             >
-              <FiCamera size={16} /> Take a Photo
+              <FiCamera size={16} /> Use Camera
             </button>
           </div>
         )}
 
         {useCamera && (
-          <div className="camera-preview">
+          <div className="camera-section">
             <Webcam
               ref={webcamRef}
-              audio={false}
               screenshotFormat="image/jpeg"
-              videoConstraints={{ width: 1280, height: 720, facingMode: "user" }}
               className="webcam-view"
             />
-            <button 
-              type="button" 
-              className="capture-btn" 
-              onClick={handleCapture}
-              disabled={isProcessing}
-            >
-              {isProcessing ? (
-                <span>Processing...</span>
-              ) : (
-                <span><FiCamera size={16} /> Capture Photo</span>
-              )}
-            </button>
-            
-            <button 
-              type="button" 
-              className="photo-action-btn" 
-              onClick={handleToggleCamera}
-            >
-              Cancel
-            </button>
+            <div className="camera-controls">
+              <button 
+                type="button" 
+                className="photo-btn capture-btn" 
+                onClick={handleCapture}
+                disabled={isProcessing}
+              >
+                <FiCamera size={16} /> {isProcessing ? 'Processing...' : 'Capture Photo'}
+              </button>
+              <button 
+                type="button" 
+                className="photo-btn cancel-btn" 
+                onClick={handleToggleCamera}
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         )}
 
-        {/* Show image preview from either upload or capture */}
         {previewImage && (
           <div className="photo-preview">
-            <img 
-              src={previewImage} 
-              alt="Your Photo" 
-              className={faceDetected ? "face-detected" : "no-face"}
-            />
-            
-            <div className={`photo-status ${faceDetected ? 'success' : 'warning'}`}>
-              {faceDetected ? (
-                <>
-                  <FiCheckCircle size={16} /> Face Verified ✓
-                </>
+            <img src={previewImage} alt="Profile preview" className="preview-image" />
+            <div className="photo-status">
+              {isProcessing ? (
+                <div className="processing-status">
+                  <FiRefreshCw className="spin" size={16} />
+                  <span>Processing...</span>
+                </div>
+              ) : faceDetected ? (
+                <div className="verification-status verified">
+                  <FiCheckCircle size={16} />
+                  <span>Face verified</span>
+                </div>
               ) : (
-                <>
-                  <FiAlertTriangle size={16} /> Face verification required
-                </>
+                <div className="verification-status not-verified">
+                  <FiXCircle size={16} />
+                  <span>No face detected</span>
+                </div>
               )}
             </div>
-            
             <div className="photo-actions">
-              <button type="button" className="photo-action-btn remove" onClick={handleResetPhoto}>
-                <FiXCircle size={14} /> Remove
+              <button 
+                type="button" 
+                className="photo-btn retry-btn" 
+                onClick={handleRetakePhoto}
+              >
+                <FiRefreshCw size={16} /> Retake
               </button>
-              
-              <button type="button" className="photo-action-btn retake" onClick={handleRetakePhoto}>
-                <FiRefreshCw size={14} /> Retake
+              <button 
+                type="button" 
+                className="photo-btn reset-btn" 
+                onClick={handleResetPhoto}
+              >
+                <FiXCircle size={16} /> Remove
               </button>
             </div>
           </div>
@@ -394,9 +405,7 @@ export const StepOne = ({
       </div>
 
       <div className="form-group">
-        <label htmlFor="password">
-          Password
-        </label>
+        <label htmlFor="password">Password *</label>
         <div className="password-input-container">
           <input
             id="password"
@@ -417,38 +426,34 @@ export const StepOne = ({
           </button>
         </div>
         
-        {/* Password Requirements */}
-        <div className="password-requirements">
-          <small className="requirements-title">Password must contain:</small>
-          <ul className="requirements-list">
-            <li className={passwordValidation.minLength ? 'valid' : 'invalid'}>
+        {formData.password && (
+          <div className="password-requirements">
+            <div className={`requirement ${passwordValidation.minLength ? 'valid' : 'invalid'}`}>
               <span className="requirement-icon">{passwordValidation.minLength ? '✓' : '×'}</span>
               At least 8 characters
-            </li>
-            <li className={passwordValidation.hasUppercase ? 'valid' : 'invalid'}>
+            </div>
+            <div className={`requirement ${passwordValidation.hasUppercase ? 'valid' : 'invalid'}`}>
               <span className="requirement-icon">{passwordValidation.hasUppercase ? '✓' : '×'}</span>
-              One uppercase letter (A-Z)
-            </li>
-            <li className={passwordValidation.hasLowercase ? 'valid' : 'invalid'}>
+              One uppercase letter
+            </div>
+            <div className={`requirement ${passwordValidation.hasLowercase ? 'valid' : 'invalid'}`}>
               <span className="requirement-icon">{passwordValidation.hasLowercase ? '✓' : '×'}</span>
-              One lowercase letter (a-z)
-            </li>
-            <li className={passwordValidation.hasNumber ? 'valid' : 'invalid'}>
+              One lowercase letter
+            </div>
+            <div className={`requirement ${passwordValidation.hasNumber ? 'valid' : 'invalid'}`}>
               <span className="requirement-icon">{passwordValidation.hasNumber ? '✓' : '×'}</span>
-              One number (0-9)
-            </li>
-            <li className={passwordValidation.hasSpecialChar ? 'valid' : 'invalid'}>
+              One number
+            </div>
+            <div className={`requirement ${passwordValidation.hasSpecialChar ? 'valid' : 'invalid'}`}>
               <span className="requirement-icon">{passwordValidation.hasSpecialChar ? '✓' : '×'}</span>
-              One special character (!@#$%^&*)
-            </li>
-          </ul>
-        </div>
+              One special character
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="form-group">
-        <label htmlFor="confirmPassword">
-          Confirm Password
-        </label>
+        <label htmlFor="confirmPassword">Confirm Password *</label>
         <div className="password-input-container">
           <input
             id="confirmPassword"
@@ -541,12 +546,12 @@ export const validateStepOne = (formData, faceDetected) => {
       (formData.photoFile || formData.selfieImage)
     ),
     errors: {
-      first_name: !formData.first_name ? 'First name is required' : null,
-      last_name: !formData.last_name ? 'Last name is required' : null,
-      email: !formData.email ? 'Email is required' : null,
-      password: !isPasswordValid ? 'Password does not meet requirements' : null,
-      confirmPassword: formData.password !== formData.confirmPassword ? 'Passwords do not match' : null,
-      photo: !faceDetected ? 'Face verification required' : null
+      firstName: !formData.first_name,
+      lastName: !formData.last_name,
+      email: !formData.email,
+      password: !isPasswordValid,
+      confirmPassword: formData.password !== formData.confirmPassword,
+      photo: !faceDetected || (!formData.photoFile && !formData.selfieImage)
     }
   };
 };
