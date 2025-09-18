@@ -7,7 +7,7 @@ import { StepTwo } from './Step2';
 import { StepThree } from './Step3';
 import { useNavigate } from 'react-router-dom';
 import { registerUser } from '../../api/AuthApi';
-import { sendOTP, getTestOTP, verifyOTP } from '../../api/OtpApi';
+import { sendOTP, verifyOTP } from '../../api/OtpApi';
 import { createRazorpayOrder, verifyPayment, initiateRazorpayCheckout } from '../../api/PaymentApi';
 import { useNotification } from '../../contexts/NotificationContext';
 import { validateStepOne } from './Step1';
@@ -18,7 +18,6 @@ function MultiStepRegister() {
   const [verificationId, setVerificationId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [testOtp, setTestOtp] = useState(''); 
   const { success, error: showError, info } = useNotification();
   const [userId, setUserId] = useState(null);
 
@@ -78,10 +77,6 @@ function MultiStepRegister() {
     if (errorMessage) {
       setErrorMessage('');
     }
-    
-    if (name === 'otp' && testOtp && value === '') {
-      setFormData(prev => ({ ...prev, otp: testOtp }));
-    }
   };
 
   const handleFileChange = (e) => {
@@ -110,7 +105,6 @@ function MultiStepRegister() {
     
     setIsLoading(true);
     setErrorMessage('');
-    setTestOtp('');
     
     try {
       const data = await sendOTP(formData.contactNo);
@@ -118,24 +112,7 @@ function MultiStepRegister() {
       
       if (data.verification_id) {
         setVerificationId(data.verification_id);
-      }
-      
-      if (data.test_otp) {
-        setTestOtp(data.test_otp);
-        
-        if (process.env.NODE_ENV !== 'production') {
-          setFormData(prev => ({ ...prev, otp: data.test_otp }));
-        }
-      }
-      
-      if (data.test_otp) {
-        if (process.env.NODE_ENV !== 'production') {
-          success("Test OTP generated successfully! OTP has been auto-filled.");
-        } else {
-          success("OTP sent successfully! Please check your phone.");
-        }
-      } else {
-        success("OTP sent successfully! Please check your phone.");
+        success('OTP sent successfully! Please check your phone.');
       }
       
     } catch (error) {
@@ -144,25 +121,6 @@ function MultiStepRegister() {
       const errorDetail = error.error || 'Failed to send OTP. Please try again.';
       setErrorMessage(errorDetail);
       showError(errorDetail);
-      
-      if (process.env.NODE_ENV !== 'production') {
-        try {
-          console.log('Trying test OTP endpoint as fallback...');
-          const testData = await getTestOTP(formData.contactNo);
-          
-          if (testData.verification_id && testData.test_otp) {
-            setVerificationId(testData.verification_id);
-            setTestOtp(testData.test_otp);
-            
-            setFormData(prev => ({ ...prev, otp: testData.test_otp }));
-            
-            setErrorMessage('Note: Using test OTP because SMS delivery failed.');
-            info('Using test OTP because SMS delivery failed.');
-          }
-        } catch (testError) {
-          console.error('Test OTP fallback also failed:', testError);
-        }
-      }
     } finally {
       setIsLoading(false);
     }
@@ -612,45 +570,6 @@ function MultiStepRegister() {
           )}
         </div>
       </form>
-      
-      {process.env.NODE_ENV !== 'production' && (
-        <div className="dev-tools">
-          <details>
-            <summary>🧪 Developer Tools</summary>
-            <div className="dev-tools-content">
-              <button 
-                type="button"
-                onClick={() => {
-                  const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
-                  setTestOtp(generatedOtp);
-                  setVerificationId(generatedOtp);
-                  setFormData(prev => ({ ...prev, otp: generatedOtp }));
-                  info(`Test OTP generated: ${generatedOtp}`);
-                }}
-              >
-                Generate Mock OTP
-              </button>
-              
-              <button
-                type="button"
-                onClick={() => {
-                  setIsContactVerified(true);
-                  success('Contact verified for testing');
-                }}
-              >
-                Force Verify Contact
-              </button>
-              
-              <div className="status-info">
-                <p>Verification ID: {verificationId || 'None'}</p>
-                <p>Test OTP: {testOtp || 'None'}</p>
-                <p>Contact Verified: {isContactVerified ? 'Yes' : 'No'}</p>
-                <p>User ID: {userId || 'None'}</p>
-              </div>
-            </div>
-          </details>
-        </div>
-      )}
     </div>
   );
 }

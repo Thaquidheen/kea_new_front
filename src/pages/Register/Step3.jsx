@@ -26,13 +26,13 @@ export const StepThree = ({
     setIsSendingOTP(true);
     
     try {
-      info("Sending OTP to your phone...", 5000);
+     
       
       await parentHandleSendOTP();
       
-      success("OTP sent successfully! Please check your phone.", 8000);
+      
     } catch (err) {
-      error(err.message || "Failed to send OTP. Please try again.", 8000);
+     
     } finally {
       setIsSendingOTP(false);
     }
@@ -73,12 +73,7 @@ export const StepThree = ({
     }
   };
   
-  // Show success notification when verification status changes
-  useEffect(() => {
-    if (isContactVerified) {
-      success("Phone number verified successfully!", 8000);
-    }
-  }, [isContactVerified, success]);
+
 
   return (
     <div className="form-step">

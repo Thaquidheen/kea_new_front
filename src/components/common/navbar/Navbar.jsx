@@ -48,22 +48,68 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Memoize user and token to prevent unnecessary re-renders
-  const [user, setUser] = useState(() => {
+  // ✅ FIXED: Reactive user and token state that updates with localStorage changes
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
+
+  // Update auth state when localStorage changes (after login/logout)
+  const updateAuthState = useCallback(() => {
     try {
-      return JSON.parse(localStorage.getItem("user") || "null");
-    } catch {
-      return null;
+      const storedUser = localStorage.getItem("user");
+      const storedToken = localStorage.getItem("accessToken");
+      
+      setUser(storedUser ? JSON.parse(storedUser) : null);
+      setToken(storedToken);
+      
+      console.log('Auth state updated:', { 
+        hasUser: !!storedUser, 
+        hasToken: !!storedToken 
+      });
+    } catch (error) {
+      console.error('Error updating auth state:', error);
+      setUser(null);
+      setToken(null);
     }
-  });
-  
-  const token = useMemo(() => localStorage.getItem("accessToken"), []);
+  }, []);
+
+  // ✅ FIXED: Initialize auth state and listen for changes
+  useEffect(() => {
+    // Initial load
+    updateAuthState();
+
+    // Listen for storage changes (when user logs in from another tab)
+    const handleStorageChange = (e) => {
+      if (e.key === 'user' || e.key === 'accessToken') {
+        updateAuthState();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Custom event for same-tab login/logout
+    const handleAuthChange = () => {
+      updateAuthState();
+    };
+    
+    window.addEventListener('authStateChanged', handleAuthChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('authStateChanged', handleAuthChange);
+    };
+  }, [updateAuthState]);
+
+  // ✅ FIXED: Correct authentication logic
+  const isAuth = useMemo(() => {
+    const isAuthenticated = !!(token && user);
+    console.log('isAuth calculated:', { token: !!token, user: !!user, isAuthenticated });
+    return isAuthenticated;
+  }, [token, user]);
 
   // Memoize computed values
   const isAdmin = useMemo(() => user?.user_type === 'admin', [user?.user_type]);
-  const isAuth = useMemo(() => !!(token && user), [token, user]);
   const displayName = useMemo(() => 
-    user?.full_name || user?.fullName || user?.name || user?.username || '', 
+    user?.full_name || user?.fullName || user?.name || user?.username || 'User', 
     [user?.full_name, user?.fullName, user?.name, user?.username]
   );
 
@@ -78,10 +124,18 @@ export default function Navbar() {
     return null;
   }, [user?.profile_picture]);
 
-  // Memoize handlers to prevent recreation on every render
+  // ✅ FIXED: Enhanced logout with auth state notification
   const handleLogout = useCallback(() => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("user");
+    
+    // Update local state immediately
+    setUser(null);
+    setToken(null);
+    
+    // Notify other components/tabs of auth change
+    window.dispatchEvent(new Event('authStateChanged'));
+    
     navigate("/login");
     
     // Close all dropdowns
@@ -90,22 +144,17 @@ export default function Navbar() {
     setMobileUserDropdownOpen(false);
   }, [navigate]);
 
-  const isActive = useCallback((path) => {
-    if (path === '/' && location.pathname === '/') {
-      return true;
-    }
-    
-    if (path !== '/') {
-      if (location.pathname === path) {
-        return true;
-      }
-      
-      const pathWithSlash = path + '/';
-      return location.pathname.startsWith(pathWithSlash);
-    }
-    
-    return false;
-  }, [location.pathname]);
+const isActive = useCallback((path) => {
+  const currentPath = location.pathname;
+  
+  // Home page - exact match only
+  if (path === '/') {
+    return currentPath === '/';
+  }
+  
+  // All other pages - exact match only
+  return currentPath === path;
+}, [location.pathname]);
 
   const toggleUserDropdown = useCallback((e) => {
     e.stopPropagation();
@@ -123,6 +172,39 @@ export default function Navbar() {
 
   const openDrawer = useCallback(() => {
     setDrawerOpen(true);
+  }, []);
+
+  // Navigation items - You can uncomment this to remove entrepreneurship
+  const navigationItems = [
+    { path: '/', label: 'Home' },
+    { path: '/about', label: 'About' },
+    { path: '/gallery', label: 'Gallery' },
+    { path: '/entrepreneurship', label: 'Entrepreneurship' },
+    { path: '/newsandarticles', label: 'News & Articles' },
+    { path: '/activitiesandtravels', label: 'Activities & Travels' },
+    { path: '/all-events', label: 'Events' },
+  ];
+
+  // Optimize scroll handler
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!tickingRef.current) {
+        requestAnimationFrame(() => {
+          const currentY = window.scrollY;
+          const scrollingDown = currentY > prevYRef.current && currentY > 100;
+          
+          setHideTop(scrollingDown);
+          setScrolled(currentY > 50);
+          
+          prevYRef.current = currentY;
+          tickingRef.current = false;
+        });
+        tickingRef.current = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   // Optimize click outside handler
@@ -154,146 +236,39 @@ export default function Navbar() {
     }
   }, [drawerOpen, userDropdownOpen, mobileUserDropdownOpen]);
 
-  // Optimize scroll handler
-  useEffect(() => {
-    const onScroll = () => {
-      if (!tickingRef.current) {
-        tickingRef.current = true;
-        window.requestAnimationFrame(() => {
-          const current = window.scrollY;
-          const prev = prevYRef.current;
-          
-          const nextHideTop = current > prev && current > 80;
-          const nextScrolled = current > 20;
-          
-          // Only update if values actually changed
-          setHideTop(currentHideTop => {
-            if (currentHideTop !== nextHideTop) {
-              return nextHideTop;
-            }
-            return currentHideTop;
-          });
-          
-          setScrolled(currentScrolled => {
-            if (currentScrolled !== nextScrolled) {
-              return nextScrolled;
-            }
-            return currentScrolled;
-          });
-          
-          prevYRef.current = current;
-          tickingRef.current = false;
-        });
-      }
-    };
-
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []); // Empty dependency array since we're using refs
-
-  // Optimize body overflow effect
-  useEffect(() => {
-    document.body.style.overflow = drawerOpen ? 'hidden' : 'auto';
-    
-    return () => {
-      document.body.style.overflow = 'auto';
-    };
-  }, [drawerOpen]);
-
-  // Close mobile menu on route change
-  useEffect(() => {
-    setDrawerOpen(false);
-    setMobileUserDropdownOpen(false);
-  }, [location.pathname]); // Only depend on pathname, not entire location object
-
-  // Optimize user sync - only listen to localStorage changes, not re-read constantly
-  useEffect(() => {
-    const syncUser = () => {
-      try {
-        const userData = localStorage.getItem("user");
-        const parsedUser = userData ? JSON.parse(userData) : null;
-        setUser(prevUser => {
-          // Only update if user data actually changed
-          if (JSON.stringify(prevUser) !== JSON.stringify(parsedUser)) {
-            return parsedUser;
-          }
-          return prevUser;
-        });
-      } catch (error) {
-        console.error("Error parsing user data:", error);
-        setUser(null);
-      }
-    };
-
-    const onStorage = (e) => { 
-      if (e.key === "user") {
-        syncUser();
-      }
-    };
-
-    window.addEventListener("storage", onStorage);
-    window.addEventListener("userUpdated", syncUser);
-    
-    return () => {
-      window.removeEventListener("storage", onStorage);
-      window.removeEventListener("userUpdated", syncUser);
-    };
-  }, []);
-
-  // Memoize navigation items to prevent recreation
-  const navigationItems = useMemo(() => [
-    { path: '/', label: 'Home' },
-    { path: '/about', label: 'About us' },
-    { path: '/gallery', label: 'Gallery' },
-    { path: '/all-events', label: 'Events' },
-    { path: '/entrepreneurship', label: 'Entrepreneurship' },
-    { path: '/newsandarticles', label: 'News & Articles' },
-    { path: '/activitiesandtravels', label: 'Activities & Travels' }
-  ], []);
-
-  // Memoize social links to prevent recreation
-  const socialLinks = useMemo(() => [
-    { href: "https://www.facebook.com/keabengaluru/", icon: FaFacebookF, label: "Facebook" },
-    { href: "https://x.com/KEABLR1", icon: FaTwitter, label: "Twitter" },
-    { href: "https://www.linkedin.com/groups/10314275/", icon: FaLinkedinIn, label: "LinkedIn" },
-    { href: "https://www.instagram.com/keabinfo", icon: FaInstagram, label: "Instagram" },
-    { href: "https://www.youtube.com/channel/UCJosvwV5KPa1XHnczWWdEig", icon: FaYoutube, label: "YouTube" },
-    { href: "https://wa.me/9590719394", icon: FaWhatsapp, label: "Contact us on WhatsApp" }
-  ], []);
-
-  /* ───────── JSX ───────── */
   return (
     <>
       {/* TOP BAR */}
-      <div className={`header-top ${hideTop ? "hide" : ""}`}>
+      <div className={`header-top ${hideTop ? 'hidden' : ''}`}>
         <div className="header-top__left">
-          <div className="header-contact">
-            <FaEnvelope size={14} />
-            <a href="mailto:keab.info@gmail.com">keab.info@gmail.com</a>
-          </div>
-          <div className="header-contact">
-            <FaPhoneAlt size={14} />
-            <a href="tel:+919590719394">+91 9590719394</a>
-          </div>
+          <span className="header-contact">
+            <FaEnvelope size={12} />
+            <span>keaalumniblr@kea.ac.in</span>
+          </span>
+          <span className="header-contact">
+            <FaPhoneAlt size={12} />
+            <span>+91 7349799660</span>
+          </span>
         </div>
-        
+
         <div className="header-top__right">
+          <span className="follow-text">Follow us on:</span>
           <div className="header-social">
-            <span className="follow-text">Follow Us</span>
-            {socialLinks.map(({ href, icon: Icon, label }) => (
-              <a key={href} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}>
-                <div className="icon-wrapper"><Icon size={16} /></div>
-              </a>
-            ))}
+            <a href="#" aria-label="Facebook"><FaFacebookF size={12} /></a>
+            <a href="#" aria-label="Twitter"><FaTwitter size={12} /></a>
+            <a href="#" aria-label="LinkedIn"><FaLinkedinIn size={12} /></a>
+            <a href="#" aria-label="Instagram"><FaInstagram size={12} /></a>
+            <a href="#" aria-label="YouTube"><FaYoutube size={12} /></a>
+            <a href="https://wa.me/917349799660" aria-label="WhatsApp"><FaWhatsapp size={12} /></a>
           </div>
         </div>
       </div>
 
-      {/* MAIN NAVBAR */}
-      <nav className={`main-nav ${scrolled ? "scrolled" : ""}`} style={{ top: hideTop ? 0 : "var(--topbar-height)" }}>
+      {/* MAIN NAVIGATION */}
+      <nav className={`main-nav ${scrolled ? 'scrolled' : ''}`}>
         <div className="main-nav__container">
           <Link to="/" className="brand-logo">
-            <img src={logo} alt="KEA logo" />
+            <img src={logo} alt="KEA Bengaluru" />
           </Link>
 
           <ul className="nav-menu">
@@ -304,27 +279,15 @@ export default function Navbar() {
             ))}
           </ul>
 
+          {/* ✅ FIXED: Authentication state properly checked */}
           {isAuth ? (
             <div className="user-account" onClick={toggleUserDropdown}>
-            <UserAvatar size={20} />
-{/* +             <UserAvatar size={20} url={profilePictureUrl} /> */}
+              <UserAvatar url={profilePictureUrl} size={24} />
               <span className="user-account__name">{displayName}</span>
               <FaChevronDown className={`dropdown-arrow ${userDropdownOpen ? 'rotated' : ''}`} />
               
-              {/* User Dropdown Menu */}
               {userDropdownOpen && (
                 <div className="user-dropdown" ref={userDropdownRef}>
-                  <div className="user-dropdown__header">
-                 <UserAvatar size={36} />
-{/* +                   <UserAvatar size={36} url={profilePictureUrl} /> */}
-                    <div className="user-dropdown__info">
-                      <span className="user-dropdown__name">{displayName}</span>
-                      <span className="user-dropdown__email">{user?.email}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="dropdown-divider"></div>
-                  
                   <Link to="/profile-edit" className={`dropdown-item ${isActive('/profile-edit') ? 'active' : ''}`}>
                     <FaUserEdit size={16} />
                     <span>Edit Profile</span>
@@ -372,18 +335,18 @@ export default function Navbar() {
       <div className={`mobile-nav ${drawerOpen ? "open" : ""}`}>
         <FaTimes className="close-btn" size={24} onClick={closeDrawer} />
 
-        <ul className="mobile-nav__list">
+        <ul className="mobile-nav__list" >
           {navigationItems.map(({ path, label }) => (
             <li key={path} className={`mobile-nav__item ${isActive(path) ? 'active' : ''}`}>
               <Link to={path} className="mobile-nav__link" onClick={closeDrawer}>{label}</Link>
             </li>
           ))}
 
+          {/* ✅ FIXED: Mobile authentication state properly checked */}
           {isAuth ? (
             <>
               <li className="mobile-user-info" onClick={toggleMobileUserDropdown}>
-               <UserAvatar size={24} />
-{/* +               <UserAvatar size={24} url={profilePictureUrl} /> */}
+                <UserAvatar url={profilePictureUrl} size={24} />
                 <span>{displayName}</span>
                 <FaChevronDown className={`dropdown-arrow ${mobileUserDropdownOpen ? 'rotated' : ''}`} />
               </li>  

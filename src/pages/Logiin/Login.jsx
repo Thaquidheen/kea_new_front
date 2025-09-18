@@ -21,8 +21,12 @@ function Login() {
     try {
       const data = await loginUser(identifier, password);
   
+      // ✅ FIXED: Store auth data and notify navbar of changes
       localStorage.setItem('accessToken', data.access);
       localStorage.setItem('user', JSON.stringify(data.user));
+
+      // ✅ FIXED: Dispatch custom event to notify navbar component
+      window.dispatchEvent(new Event('authStateChanged'));
 
       success('Login successful!');
       navigate('/');
@@ -48,12 +52,12 @@ function Login() {
       <h2>Login</h2>
       <form onSubmit={handleSubmit} className="login-form">
         
-        <label>Email or Phone (we'll treat it as email):</label>
+        <label>Email or Phone:</label>
         <input
           type="text"
           value={identifier}
           onChange={(e) => setIdentifier(e.target.value)}
-          placeholder="Enter your email"
+          placeholder="Enter your email or phone"
         />
 
         <label>Password:</label>
