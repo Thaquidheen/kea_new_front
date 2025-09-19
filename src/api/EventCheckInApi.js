@@ -28,7 +28,7 @@ export const scanQRForEventCheckIn = async (qrData, eventId) => {
   try {
     console.log("Sending scan request:", { qrData: qrData.substring(0, 30) + "...", eventId });
     
-    const response = await fetch('/api/events/scan-qr/', {
+    const response = await fetch('program/scan-qr-event-checkin/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

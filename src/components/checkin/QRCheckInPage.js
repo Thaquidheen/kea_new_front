@@ -87,7 +87,7 @@ const QRCheckInPage = () => {
     checkCapabilities();
   }, []);
 
-  // Initialize QR Scanner
+  // Initialize QR Scanner with improved configuration
   const initializeQRScanner = async () => {
     if (!videoRef.current) {
       console.error('Video element not found');
@@ -98,41 +98,76 @@ const QRCheckInPage = () => {
     try {
       console.log('Initializing QR Scanner...');
       
+      // Check if camera is available
       if (!QrScanner.hasCamera()) {
         throw new Error('No camera found on this device');
       }
 
+      // Stop any existing scanner first
+      if (qrScannerRef.current) {
+        await qrScannerRef.current.stop();
+        qrScannerRef.current.destroy();
+        qrScannerRef.current = null;
+      }
+
+      // Create new QR scanner with improved configuration
       qrScannerRef.current = new QrScanner(
         videoRef.current,
         (result) => {
-          console.log('QR Code detected:', result.data);
-          handleQRCodeDetected(result.data);
+          const qrData = result.data || result;
+          console.log('QR Code raw result:', result);
+          console.log('QR Code data:', qrData);
+          handleQRCodeDetected(qrData);
         },
         {
-          preferredCamera: 'environment',
+          preferredCamera: 'environment', // Use back camera on mobile
           highlightScanRegion: true,
           highlightCodeOutline: true,
-          maxScansPerSecond: 5,
+          maxScansPerSecond: 2, // Reduced to prevent rapid duplicate scans
           returnDetailedScanResult: true,
+          
+          // Enhanced scanning region calculation for better detection
+          calculateScanRegion: (video) => {
+            const smallerDimension = Math.min(video.videoWidth, video.videoHeight);
+            const scanRegionSize = Math.round(smallerDimension * 0.75);
+            return {
+              x: Math.round((video.videoWidth - scanRegionSize) / 2),
+              y: Math.round((video.videoHeight - scanRegionSize) / 2),
+              width: scanRegionSize,
+              height: scanRegionSize,
+            };
+          },
         }
       );
 
+      // Start the scanner
+      console.log('Starting QR scanner...');
       await qrScannerRef.current.start();
+      
       setIsScanning(true);
       setScanningError('');
-      showMessage('success', '📷 QR Scanner started! Point camera at QR code');
+      showMessage('success', 'QR Scanner started! Point camera at QR code');
+      
+      console.log('QR Scanner initialized successfully');
       
     } catch (error) {
       console.error('QR Scanner initialization error:', error);
       setIsScanning(false);
       
       let errorMessage = 'Failed to start QR scanner';
+      
       if (error.name === 'NotAllowedError') {
-        errorMessage = 'Camera permission denied. Please allow camera access.';
+        errorMessage = 'Camera permission denied. Please allow camera access and refresh the page.';
       } else if (error.name === 'NotFoundError') {
         errorMessage = 'No camera found on this device.';
       } else if (error.name === 'NotReadableError') {
-        errorMessage = 'Camera is being used by another application.';
+        errorMessage = 'Camera is being used by another application. Please close other camera apps.';
+      } else if (error.name === 'OverconstrainedError') {
+        errorMessage = 'Camera constraints not supported. Try a different device.';
+      } else if (error.message.includes('camera')) {
+        errorMessage = `Camera error: ${error.message}`;
+      } else {
+        errorMessage = `Scanner error: ${error.message}`;
       }
       
       setScanningError(errorMessage);
@@ -140,31 +175,86 @@ const QRCheckInPage = () => {
     }
   };
 
-  // Handle QR code detection
+  // Enhanced QR code detection with support for all formats
   const handleQRCodeDetected = async (qrData) => {
     console.log('QR Data detected:', qrData);
+    console.log('QR Data type:', typeof qrData);
+    console.log('QR Data length:', qrData ? qrData.length : 0);
     
     try {
-      let userId = '';
+      let userIdToProcess = '';
+      let isSecureFormat = false;
       
-      if (qrData.includes('user_id=')) {
+      // Handle KEA_SECURE format first (most important)
+      if (qrData.includes('KEA_SECURE:')) {
+        console.log('Secure QR code detected');
+        userIdToProcess = qrData; // Use the entire secure payload
+        isSecureFormat = true;
+      }
+      // Handle other formats
+      else if (qrData.includes('user_id=')) {
         const match = qrData.match(/user_id=([^&\s]+)/);
-        userId = match ? match[1] : '';
-      } else if (qrData.includes('USER_ID:')) {
-        userId = qrData.split('USER_ID:')[1]?.split(/[\s,&]/)[0] || '';
-      } else if (/^[a-zA-Z0-9-]+$/.test(qrData.trim())) {
-        userId = qrData.trim();
-      } else {
+        userIdToProcess = match ? match[1] : '';
+        console.log('user_id= format detected:', userIdToProcess);
+      } 
+      else if (qrData.includes('USER_ID:')) {
+        userIdToProcess = qrData.split('USER_ID:')[1]?.split(/[\s,&]/)[0] || '';
+        console.log('USER_ID: format detected:', userIdToProcess);
+      }
+      // Handle KEA_QR format
+      else if (qrData.startsWith('KEA_QR|')) {
+        console.log('KEA_QR format detected');
+        const parts = qrData.split('|');
+        for (const part of parts) {
+          if (part.startsWith('USER_ID=')) {
+            userIdToProcess = part.substring(8); // Remove 'USER_ID='
+            break;
+          }
+          if (part.startsWith('ID=')) {
+            userIdToProcess = part.substring(3); // Remove 'ID='
+            break;
+          }
+        }
+        if (!userIdToProcess) {
+          userIdToProcess = qrData; // Use entire string as fallback
+        }
+      }
+      // Handle UUID format
+      else if (/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(qrData.trim())) {
+        userIdToProcess = qrData.trim();
+        console.log('UUID format detected:', userIdToProcess);
+      }
+      // Handle simple alphanumeric ID
+      else if (/^[a-zA-Z0-9_\-]+$/.test(qrData.trim()) && qrData.trim().length > 3) {
+        userIdToProcess = qrData.trim();
+        console.log('Simple ID format detected:', userIdToProcess);
+      }
+      // Try to extract any ID from mixed content
+      else {
+        // Look for UUID pattern anywhere in the string
         const uuidMatch = qrData.match(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/);
-        userId = uuidMatch ? uuidMatch[0] : '';
+        if (uuidMatch) {
+          userIdToProcess = uuidMatch[0];
+          console.log('Extracted UUID from text:', userIdToProcess);
+        } else {
+          // Last resort: use the entire QR data
+          userIdToProcess = qrData.trim();
+          console.log('Using entire QR data as ID:', userIdToProcess.substring(0, 50) + '...');
+        }
       }
       
-      if (!userId) {
+      if (!userIdToProcess) {
+        console.error('No user ID could be extracted from QR code');
         showMessage('warning', `QR code detected but no User ID found. Data: ${qrData.substring(0, 50)}...`);
         return;
       }
       
-      setManualUserId(userId);
+      console.log('Final User ID to process:', isSecureFormat ? 'SECURE_FORMAT' : userIdToProcess);
+      
+      // Set the user ID in the input field
+      setManualUserId(userIdToProcess);
+      
+      // Stop the QR scanner to prevent multiple scans
       stopQRScanner();
       
       // Mobile: Scroll to User ID section
@@ -172,13 +262,21 @@ const QRCheckInPage = () => {
         scrollToSection(userIdSectionRef);
       }, 300);
       
-      showMessage('success', `✅ User ID detected: ${userId}`);
+      // Show success message
+      if (isSecureFormat) {
+        showMessage('success', 'Secure QR code detected and processed');
+      } else {
+        showMessage('success', `User ID detected: ${userIdToProcess}`);
+      }
       
+      // Auto-verify if event is selected
       if (selectedEvent) {
+        console.log('Auto-verifying user with selected event');
         setTimeout(() => {
-          handleScanUser(userId);
+          handleScanUser(userIdToProcess);
         }, 500);
       } else {
+        console.log('No event selected, manual verification required');
         showMessage('warning', 'Please select an event first, then click "Verify User"');
         setTimeout(() => {
           scrollToSection(eventSectionRef);
@@ -187,7 +285,7 @@ const QRCheckInPage = () => {
       
     } catch (error) {
       console.error('QR code processing error:', error);
-      showMessage('error', 'Error processing QR code data');
+      showMessage('error', 'Error processing QR code data: ' + error.message);
     }
   };
 
@@ -233,13 +331,19 @@ const QRCheckInPage = () => {
     }
   };
 
-  const stopQRScanner = () => {
+  const stopQRScanner = async () => {
     if (qrScannerRef.current) {
-      qrScannerRef.current.stop();
-      qrScannerRef.current.destroy();
-      qrScannerRef.current = null;
-      setIsScanning(false);
-      console.log('QR Scanner stopped');
+      try {
+        console.log('Stopping QR Scanner...');
+        await qrScannerRef.current.stop();
+        qrScannerRef.current.destroy();
+        console.log('QR Scanner stopped successfully');
+      } catch (error) {
+        console.error('Error stopping QR scanner:', error);
+      } finally {
+        qrScannerRef.current = null;
+        setIsScanning(false);
+      }
     }
   };
 
@@ -254,7 +358,6 @@ const QRCheckInPage = () => {
   useEffect(() => {
     return () => {
       stopQRScanner();
-      console.log('Component unmount: QR scanner cleaned up');
     };
   }, []);
 
@@ -262,9 +365,7 @@ const QRCheckInPage = () => {
     const handleVisibilityChange = () => {
       if (document.hidden && isScanning) {
         stopQRScanner();
-        console.log('Tab hidden, pausing QR scanner');
       } else if (!document.hidden && showCamera && !isScanning && videoRef.current) {
-        console.log('Tab visible, restarting QR scanner');
         initializeQRScanner();
       }
     };
@@ -282,10 +383,41 @@ const QRCheckInPage = () => {
   const loadEvents = async () => {
     try {
       setLoading(true);
+      console.log('Loading events...');
+      
       const response = await getEventsList();
-      setEvents(response);
+      console.log('API Response:', response);
+      
+      // Handle different possible response formats
+      let eventsArray = [];
+      
+      if (Array.isArray(response)) {
+        // Response is already an array
+        eventsArray = response;
+      } else if (response && Array.isArray(response.data)) {
+        // Response has a data property that contains the array
+        eventsArray = response.data;
+      } else if (response && Array.isArray(response.results)) {
+        // Response has a results property that contains the array
+        eventsArray = response.results;
+      } else if (response && typeof response === 'object') {
+        // Response is an object, try to extract array from common properties
+        eventsArray = response.events || response.items || [];
+      } else {
+        console.warn('Unexpected response format:', response);
+        eventsArray = [];
+      }
+      
+      console.log(`Processed ${eventsArray.length} events:`, eventsArray);
+      setEvents(eventsArray);
+      
+      if (eventsArray.length === 0) {
+        showMessage('warning', 'No events found');
+      }
+      
     } catch (error) {
       console.error('Error loading events:', error);
+      setEvents([]); // Ensure events is always an array
       showMessage('error', 'Failed to load events. Please check your connection.');
     } finally {
       setLoading(false);
@@ -300,7 +432,13 @@ const QRCheckInPage = () => {
   const handleScanUser = async (userId = null) => {
     const userIdToScan = userId || manualUserId.trim();
     
+    console.log('=== QR SCAN DEBUG START ===');
+    console.log('Selected Event:', selectedEvent);
+    console.log('User ID to scan:', userIdToScan);
+    console.log('Auth token present:', !!localStorage.getItem('accessToken'));
+    
     if (!selectedEvent) {
+      console.error('No event selected');
       showMessage('error', 'Please select an event first');
       setTimeout(() => {
         scrollToSection(eventSectionRef);
@@ -309,6 +447,7 @@ const QRCheckInPage = () => {
     }
 
     if (!userIdToScan) {
+      console.error('No user ID provided');
       showMessage('error', 'Please enter a User ID or scan QR code');
       setTimeout(() => {
         scrollToSection(userIdSectionRef);
@@ -318,7 +457,16 @@ const QRCheckInPage = () => {
 
     setLoading(true);
     try {
+      console.log('Making API call...');
+      console.log('API URL: https://web-production-c00c.up.railway.app/program/scan-qr-event-checkin/');
+      console.log('Request payload:', {
+        qr_data: userIdToScan,
+        event_id: selectedEvent
+      });
+      
       const response = await scanQRForEventCheckIn(userIdToScan, selectedEvent);
+      console.log('API Response received:', response);
+      
       setScanResult(response);
       
       // Mobile: Scroll to results section
@@ -332,27 +480,53 @@ const QRCheckInPage = () => {
       
       switch (response.status) {
         case 'ready_for_checkin':
+          console.log('User ready for check-in');
           showMessage('success', 'User verified and ready for check-in!');
           break;
         case 'already_checked_in':
+          console.log('User already checked in');
           showMessage('warning', 'User is already checked in');
           break;
         case 'not_registered':
+          console.log('User not registered');
           showMessage('error', 'User is not registered for this event');
+          break;
+        case 'user_not_found':
+          console.log('User not found');
+          showMessage('error', 'User not found in system');
           break;
         case 'membership_inactive':
         case 'membership_expired':
+          console.log('Membership issues');
           showMessage('warning', response.message);
           break;
         default:
+          console.log('Other status:', response.status);
           showMessage('info', response.message || 'User verification completed');
       }
     } catch (error) {
-      console.error('Error scanning QR:', error);
-      showMessage('error', 'Failed to verify user. Please check your connection.');
+      console.error('API Error:', error);
+      
+      // Determine error type for better user messaging
+      let errorMessage = 'Failed to verify user. ';
+      
+      if (error.message.includes('Authentication')) {
+        errorMessage += 'Please log in again.';
+      } else if (error.message.includes('Permission')) {
+        errorMessage += 'You need admin permissions.';
+      } else if (error.message.includes('not found')) {
+        errorMessage += 'API endpoint not found.';
+      } else if (error.message.includes('network') || error.message.includes('fetch')) {
+        errorMessage += 'Check your internet connection.';
+      } else {
+        errorMessage += error.message;
+      }
+      
+      showMessage('error', errorMessage);
       setScanResult(null);
     } finally {
       setLoading(false);
+      console.log('=== QR SCAN DEBUG END ===');
     }
   };
 
@@ -456,10 +630,72 @@ const QRCheckInPage = () => {
     }
   };
 
-  const selectedEventData = events.find(event => event.event_id === selectedEvent);
+  // Safe way to get selected event data with null check
+  const selectedEventData = React.useMemo(() => {
+    if (!Array.isArray(events) || events.length === 0 || !selectedEvent) {
+      return null;
+    }
+    return events.find(event => String(event.event_id) === String(selectedEvent)) || null;
+  }, [events, selectedEvent]);
 
   return (
     <div className="qr-checkin-page">
+      {/* Debug Panel for Development */}
+      {process.env.NODE_ENV === 'development' && (
+        <div style={{
+          position: 'fixed',
+          top: '10px',
+          right: '10px',
+          width: '300px',
+          backgroundColor: 'rgba(0,0,0,0.9)',
+          color: 'white',
+          padding: '10px',
+          borderRadius: '5px',
+          fontSize: '12px',
+          zIndex: 9999
+        }}>
+          <strong>QR Debug Panel</strong>
+          <div style={{ marginTop: '10px' }}>
+            <div><strong>Scanner:</strong> {isScanning ? 'ACTIVE' : 'INACTIVE'}</div>
+            <div><strong>Camera:</strong> {showCamera ? 'ON' : 'OFF'}</div>
+            <div><strong>Event:</strong> {selectedEvent ? 'SELECTED' : 'NONE'}</div>
+            <div><strong>User ID:</strong> {manualUserId || 'EMPTY'}</div>
+            <div><strong>Events:</strong> {Array.isArray(events) ? events.length : 'NOT ARRAY'}</div>
+          </div>
+          <div style={{ marginTop: '10px' }}>
+            <button
+              onClick={() => handleQRCodeDetected('KEA_SECURE:test-token-123')}
+              style={{
+                background: '#007bff',
+                color: 'white',
+                border: 'none',
+                borderRadius: '3px',
+                padding: '5px 8px',
+                cursor: 'pointer',
+                fontSize: '11px',
+                marginRight: '5px'
+              }}
+            >
+              Test Secure QR
+            </button>
+            <button
+              onClick={() => handleQRCodeDetected('user-123-test')}
+              style={{
+                background: '#28a745',
+                color: 'white',
+                border: 'none',
+                borderRadius: '3px',
+                padding: '5px 8px',
+                cursor: 'pointer',
+                fontSize: '11px'
+              }}
+            >
+              Test Simple ID
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="qr-header">
         <div className="qr-header-container">
@@ -469,7 +705,7 @@ const QRCheckInPage = () => {
               <p className="qr-header-subtitle">Scan QR codes and manage event attendance</p>
               
               <div className="qr-security-status">
-                {isSecureContext ? '🔒 Secure Connection' : '⚠️ Insecure Connection - Camera may not work'}
+                {isSecureContext ? 'Secure Connection' : 'Insecure Connection - Camera may not work'}
               </div>
             </div>
             <div className="qr-nav-buttons">
@@ -514,7 +750,7 @@ const QRCheckInPage = () => {
         {/* System Status Card */}
         {(!isSecureContext || !deviceCapabilities.supportsGetUserMedia) && (
           <div className="qr-system-warning">
-            <h3>⚠️ System Requirements</h3>
+            <h3>System Requirements</h3>
             <div>
               {!isSecureContext && (
                 <div>
@@ -546,7 +782,7 @@ const QRCheckInPage = () => {
             disabled={loading}
           >
             <option value="">Choose an event...</option>
-            {events.map((event) => (
+            {Array.isArray(events) && events.map((event) => (
               <option key={event.event_id} value={event.event_id}>
                 {event.event_name} - {event.event_sub_name} 
                 ({new Date(event.event_time).toLocaleDateString()})
@@ -581,14 +817,14 @@ const QRCheckInPage = () => {
                   disabled={loading || !selectedEvent || !isSecureContext || !deviceCapabilities.supportsGetUserMedia}
                   className={`qr-button qr-camera-button ${showCamera ? 'stop' : 'start'}`}
                 >
-                  {showCamera ? '⏹️ Stop Camera' : '📸 Open Camera Scanner'}
+                  {showCamera ? 'Stop Camera' : 'Open Camera Scanner'}
                 </button>
                 
                 {(permissionStatus !== 'prompt' || cameraError) && (
                   <div className="qr-camera-status">
-                    Status: {permissionStatus === 'granted' ? '✓ Camera Access Granted' : 
-                            permissionStatus === 'denied' ? '✗ Camera Access Denied' : 
-                            '⏳ Permission Pending'}
+                    Status: {permissionStatus === 'granted' ? 'Camera Access Granted' : 
+                            permissionStatus === 'denied' ? 'Camera Access Denied' : 
+                            'Permission Pending'}
                   </div>
                 )}
               </div>
@@ -596,25 +832,25 @@ const QRCheckInPage = () => {
               {/* Camera Error Display */}
               {cameraError && (
                 <div className="qr-camera-error">
-                  <h4>📷 Camera Access Issue</h4>
+                  <h4>Camera Access Issue</h4>
                   <p>{cameraError}</p>
                   
                   <details className="qr-troubleshooting">
-                    <summary>🔧 Troubleshooting Guide</summary>
+                    <summary>Troubleshooting Guide</summary>
                     <div>
                       <div>
                         <strong>1. Check Connection Security:</strong>
                         <div>
                           Current: <code>{window.location.origin}</code><br/>
-                          ✅ Secure: https:// or localhost<br/>
-                          ❌ Insecure: http:// (except localhost)
+                          Secure: https:// or localhost<br/>
+                          Insecure: http:// (except localhost)
                         </div>
                       </div>
                       
                       <div>
                         <strong>2. Grant Browser Permission:</strong>
                         <div>
-                          • Look for camera icon 📷 in address bar<br/>
+                          • Look for camera icon in address bar<br/>
                           • Click and select "Allow"<br/>
                           • Refresh the page
                         </div>
@@ -634,7 +870,7 @@ const QRCheckInPage = () => {
                 <div className="qr-camera-container">
                   {isScanning && (
                     <div className="qr-camera-status-indicator">
-                      🎥 LIVE - Scanning for QR Codes
+                      LIVE - Scanning for QR Codes
                     </div>
                   )}
                   
@@ -646,9 +882,9 @@ const QRCheckInPage = () => {
                   />
                   
                   <div className="qr-camera-instructions">
-                    📱 <strong>Position QR code in camera view</strong><br/>
-                    💡 Scanner will automatically detect QR codes<br/>
-                    🔄 Processing {isScanning ? 'active' : 'initializing'}...
+                    <strong>Position QR code in camera view</strong><br/>
+                    Scanner will automatically detect QR codes<br/>
+                    Processing {isScanning ? 'active' : 'initializing'}...
                   </div>
                   
                   {scanningError && (
@@ -659,7 +895,7 @@ const QRCheckInPage = () => {
                   
                   <div className="qr-camera-controls">
                     <button onClick={stopCamera} className="qr-button qr-stop-button">
-                      ⏹️ Stop Camera
+                      Stop Camera
                     </button>
                   </div>
                 </div>
@@ -702,10 +938,10 @@ const QRCheckInPage = () => {
 
               {/* Instructions */}
               <div className="qr-instructions">
-                <h3 className="qr-instructions-title">📱 How to use:</h3>
+                <h3 className="qr-instructions-title">How to use:</h3>
                 <ol className="qr-instructions-list">
                   <li>Select an event from the dropdown above</li>
-                  <li>Click "📸 Open Camera Scanner" to access camera</li>
+                  <li>Click "Open Camera Scanner" to access camera</li>
                   <li>Allow camera permissions when prompted</li>
                   <li>Position the QR code in the camera view</li>
                   <li>The scanner will automatically detect and read the QR code</li>
@@ -715,7 +951,7 @@ const QRCheckInPage = () => {
                 </ol>
                 
                 <div className="qr-pro-tip">
-                  <strong>💡 Pro Tip:</strong> For best scanning results, ensure good lighting and hold the QR code steady in the camera view. The scanner will automatically detect QR codes without clicking.
+                  <strong>Pro Tip:</strong> For best scanning results, ensure good lighting and hold the QR code steady in the camera view. The scanner will automatically detect QR codes without clicking.
                 </div>
               </div>
             </div>
@@ -737,7 +973,7 @@ const QRCheckInPage = () => {
                 {scanResult.user_info && (
                   <div className="qr-user-info-grid">
                     <div>
-                      <h4 className="qr-info-section-title">👤 User Information</h4>
+                      <h4 className="qr-info-section-title">User Information</h4>
                       <div className="qr-info-list">
                         <div className="qr-info-item">
                           <span className="qr-info-label">Name:</span>
@@ -770,7 +1006,7 @@ const QRCheckInPage = () => {
 
                     {scanResult.event_info && (
                       <div>
-                        <h4 className="qr-info-section-title">🎫 Event Information</h4>
+                        <h4 className="qr-info-section-title">Event Information</h4>
                         <div className="qr-info-list">
                           <div className="qr-info-item">
                             <span className="qr-info-label">Event:</span>
@@ -798,7 +1034,7 @@ const QRCheckInPage = () => {
                       disabled={loading}
                       className="qr-button success large qr-checkin-button"
                     >
-                      {loading ? 'Checking In...' : '✓ Check In User'}
+                      {loading ? 'Checking In...' : 'Check In User'}
                     </button>
                   )}
                   
@@ -834,7 +1070,7 @@ const QRCheckInPage = () => {
                     disabled={loading || !selectedEvent}
                     className="qr-button primary"
                   >
-                    {loading ? '🔄 Refreshing...' : '🔄 Refresh'}
+                    {loading ? 'Refreshing...' : 'Refresh'}
                   </button>
                   {attendanceData && (
                     <button
@@ -864,7 +1100,7 @@ const QRCheckInPage = () => {
                       }}
                       className="qr-button secondary qr-export-button"
                     >
-                      📊 Export CSV
+                      Export CSV
                     </button>
                   )}
                 </div>
@@ -947,7 +1183,7 @@ const QRCheckInPage = () => {
                             <span className={`qr-table-status-badge ${
                               attendee.checked_in ? 'checked-in' : 'pending'
                             }`}>
-                              {attendee.checked_in ? '✓ In' : '⏳ Pending'}
+                              {attendee.checked_in ? 'In' : 'Pending'}
                               <div className="qr-show-mobile qr-mobile-time">
                                 {attendee.checked_in_at && (
                                   <small>{new Date(attendee.checked_in_at).toLocaleString()}</small>
@@ -973,7 +1209,7 @@ const QRCheckInPage = () => {
                               className="qr-load-button"
                               title="Load user for check-in"
                             >
-                              📋 Load
+                              Load
                             </button>
                           </td>
                         </tr>
@@ -993,7 +1229,7 @@ const QRCheckInPage = () => {
 
             {!attendanceData && !loading && (
               <div className="qr-empty-state">
-                <div className="qr-empty-icon">📊</div>
+                <div className="qr-empty-icon">Chart</div>
                 <h3 className="qr-empty-title">No Attendance Data</h3>
                 <p className="qr-empty-text">
                   Select an event and click "Refresh" to view attendance data
@@ -1014,8 +1250,8 @@ const QRCheckInPage = () => {
       {/* Footer */}
       <div className="qr-footer">
         Event Check-in System v2.0 | 
-        Camera: {deviceCapabilities.supportsGetUserMedia ? '✓ Supported' : '✗ Not Supported'} | 
-        Connection: {isSecureContext ? '🔒 Secure' : '⚠️ Insecure'} | 
+        Camera: {deviceCapabilities.supportsGetUserMedia ? 'Supported' : 'Not Supported'} | 
+        Connection: {isSecureContext ? 'Secure' : 'Insecure'} | 
         Browser: {navigator.userAgent.includes('Chrome') ? 'Chrome' : 
                  navigator.userAgent.includes('Firefox') ? 'Firefox' : 
                  navigator.userAgent.includes('Safari') ? 'Safari' : 'Other'}
@@ -1025,4 +1261,3 @@ const QRCheckInPage = () => {
 };
 
 export default QRCheckInPage;
-                  
